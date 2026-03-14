@@ -48,6 +48,16 @@ const GROUPS = [
       c.startsWith("place-"),
   },
   {
+    name: "Background",
+    match: (c) =>
+      c.startsWith("bg-") ||
+      c.startsWith("from-") ||
+      c.startsWith("via-") ||
+      c.startsWith("to-") ||
+      c.startsWith("bg-blend-") ||
+      c.startsWith("bg-opacity-"),
+  },
+  {
     name: "Color",
     match: (c) =>
       c.startsWith("bg-") ||
