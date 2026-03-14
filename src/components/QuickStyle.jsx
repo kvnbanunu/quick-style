@@ -20,10 +20,10 @@ export default function QuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
-      console.log(selectBoxRef.current.style.display);
-      document.removeEventListener("mousemove", onMouseMove);
+
+      // document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
+      // document.removeEventListener("contextmenu", onRightClick);
       setIsOpen(false);
       setStorage("isOpen", false);
     }
@@ -31,9 +31,9 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      document.addEventListener("mousemove", onMouseMove);
+      // document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
-      document.addEventListener("contextmenu", onRightClick);
+      // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
       setIsOpen(true);
@@ -42,8 +42,11 @@ export default function QuickStyle() {
   }
 
   function onClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
+
 
     e.preventDefault();
     e.stopPropagation();
@@ -54,6 +57,8 @@ export default function QuickStyle() {
   }
 
   function onRightClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -65,6 +70,8 @@ export default function QuickStyle() {
   }
 
   function onMouseMove(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -94,12 +101,6 @@ export default function QuickStyle() {
 
   function selectElement(el) {
     if (!el) return;
-
-    // example for REESE
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
-    console.log(fileName);
-    console.log(lineNumber);
-    console.log(columnNumber);
 
     setSelected(el);
   }
@@ -231,7 +232,6 @@ export default function QuickStyle() {
         onClick={() => {
           turnOnQuickStyle();
           setIsOpen(true);
-          setStorage("isOpen", true);
         }}
         className="absolute bottom-10 right-10 z-10"
       >

@@ -3,7 +3,8 @@ import tailwindClasses from "./tailwindClasses";
 import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 
-export default function ClassEditor({ classes, selected, setClasses }) {
+export default function ClassEditor({ classes, selected, oldSelected, setClasses }) {
+
   function applyClasses(list) {
     if (!selected) return;
 
