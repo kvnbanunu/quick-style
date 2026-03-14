@@ -1,9 +1,0 @@
-bg-red-500
-bg-blue-300
-bg-green-400
-text-emerald-50
-text-red-500
-text-red-500
-border-red-500
-text-red-500
-text-red-500
