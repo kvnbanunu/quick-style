@@ -2,11 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { getStorage, setStorage } from "./utils/localStorage";
+import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 
 export default function QuickStyle() {
+  const [isOpenInit, setIsOpenInit] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
@@ -14,34 +14,34 @@ export default function QuickStyle() {
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
-
-
   function turnOffQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
-      console.log(selectBoxRef.current.style.display);
-      document.removeEventListener("mousemove", onMouseMove);
+
+      // document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
-      setIsOpen(false);
-      setStorage("isOpen", false);
+      // document.removeEventListener("contextmenu", onRightClick);
+      // setIsOpen(false);
+      setStorage("quick-style-isOpen", false);
     }
   }
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      document.addEventListener("mousemove", onMouseMove);
+      // document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
-      document.addEventListener("contextmenu", onRightClick);
+      // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
-      setIsOpen(true);
-      setStorage("isOpen", true);
+      // setIsOpen(true);
+      setStorage("quick-style-isOpen", true);
     }
   }
 
   function onClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -49,22 +49,26 @@ export default function QuickStyle() {
     e.stopPropagation();
 
     // Always store the latest clicked element
-    setStorage("selected", e.target.outerHTML);
+    setStorage("quick-style-selected", e.target.outerHTML);
     selectElement(e.target);
   }
 
   function onRightClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
     e.preventDefault(); // optional: prevents the browser menu
 
-    setStorage("selected", null);
+    setStorage("quick-style-selected", null);
     setSelected(null);
     updateSelectBox(null);
   }
 
   function onMouseMove(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -95,12 +99,6 @@ export default function QuickStyle() {
   function selectElement(el) {
     if (!el) return;
 
-    // example for REESE
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
-    console.log(fileName);
-    console.log(lineNumber);
-    console.log(columnNumber);
-
     setSelected(el);
   }
   function getElementClasses(el) {
@@ -122,10 +120,12 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
-  //applies selected element classes to the quickstyle box for viewing 
+
+  //applies selected element classes to the quickstyle box for viewing
   useEffect(() => {
     if (!selected) return;
-
+    console.log(selected);
+    updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
     };
@@ -133,12 +133,15 @@ export default function QuickStyle() {
     syncClasses();
     const observer = new MutationObserver((mutations) => {
       const changedClass = mutations.some(
-        (m) => m.type === "attributes" && m.attributeName === "class"
+        (m) => m.type === "attributes" && m.attributeName === "class",
       );
       if (changedClass) syncClasses();
     });
 
-    observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(selected, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     return () => observer.disconnect();
   }, [selected]);
@@ -146,16 +149,21 @@ export default function QuickStyle() {
   useEffect(() => {
     if (!selected || !(selected instanceof Element)) return;
 
-    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    setClasses(
+      (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
+    );
     updateSelectBox(selected);
     selected.scrollIntoView({ block: "nearest", inline: "nearest" });
     return;
   }, [selected]);
 
   useEffect(() => {
-    if (isOpen) {
-      setSelected(stringToHTMLElements(getStorage("selected")));
+    if (isOpenInit === null) return;
+    if (isOpen === true || isOpen === "true") {
+      setSelected(stringToHTMLElements(getStorage("quick-style-selected")));
       turnOnQuickStyle();
+    } else {
+      turnOffQuickStyle();
     }
   }, [isOpen]);
 
@@ -179,7 +187,9 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    setIsOpen(getStorage("isOpen"));
+    const isOpenKey = getStorage("quick-style-isOpen");
+    setIsOpenInit(true);
+    setIsOpen(isOpenKey === true || isOpenKey === "true");
 
     return () => {
       hoverBox.remove();
@@ -187,14 +197,16 @@ export default function QuickStyle() {
     };
   }, []);
 
-
-
+  // clear localStorage on app shutdown
+  if (import.meta.hot) {
+    import.meta.hot.on("vite:ws:disconnect", clearStorage);
+  }
 
   if (isOpen) {
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-md h-md min-h-48 z-10 rounded absolute bottom-10 right-10 flex flex-col justify-between"
+        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
       >
         <p className="text-lg">Quick Style Editor</p>
         <ElementTraverser
@@ -207,6 +219,7 @@ export default function QuickStyle() {
           classes={classes}
           selected={selected}
           setClasses={setClasses}
+          setSelected={setSelected}
         />
         <ElementDragger
           updateBox={updateBox}
@@ -216,8 +229,7 @@ export default function QuickStyle() {
         />
         <button
           onClick={() => {
-            turnOffQuickStyle();
-
+            setIsOpen(false);
           }}
         >
           Close
@@ -229,11 +241,9 @@ export default function QuickStyle() {
       <button
         id="quickstyle-editor"
         onClick={() => {
-          turnOnQuickStyle();
           setIsOpen(true);
-          setStorage("isOpen", true);
         }}
-        className="absolute bottom-10 right-10 z-10"
+        className="fixed bottom-10 right-10 z-10"
       >
         Quick Style!
       </button>
