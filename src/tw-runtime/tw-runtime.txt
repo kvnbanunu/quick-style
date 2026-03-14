@@ -1,0 +1,2 @@
+bg-red-500
+bg-blue-300
