@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import tailwindClasses from "./tailwindClasses";
 import { sendClass } from "../tw-runtime/tw-runtime";
 
@@ -15,7 +15,7 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   function addClass(cls) {
     if (!cls) return;
     applyClasses([...classes, cls]);
-    sendClass(cls);
+    //sendClass(cls);
   }
 
   function removeClass(cls) {
@@ -34,7 +34,70 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     );
   }
 }
+function ColorSwatch({ cls }) {
+  const probeRef = useRef(null);
+  const [color, setColor] = useState(null);
 
+  useEffect(() => {
+    const probe = probeRef.current;
+    if (!probe) return;
+
+    const styles = window.getComputedStyle(probe);
+    //apply only to styles that will have colour values
+    if (cls.startsWith("bg-") || cls.startsWith("from-") || cls.startsWith("via-") || cls.startsWith("to-")) {
+      setColor(styles.backgroundColor);
+      return;
+    }
+
+    if (cls.startsWith("text-")) {
+      setColor(styles.color);
+      return;
+    }
+
+    if (cls.startsWith("border-")) {
+      setColor(styles.borderColor);
+      return;
+    }
+
+    setColor(null);
+  }, [cls]);
+  //consider a class transparent if it has no color or is explicitly transparent
+  const isTransparent =
+    !color ||
+    color === "rgba(0, 0, 0, 0)" ||
+    color === "transparent";
+
+  return (<>
+    <>
+      {!isTransparent && (
+        <span
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: 2,
+            border: "1px solid #666",
+            background: color,
+            display: "inline-block",
+            marginRight: 6,
+            flexShrink: 0,
+          }}
+        />
+      )}
+      <span
+        ref={probeRef}
+        className={cls}
+        style={{
+          position: "absolute",
+          opacity: 0,
+          pointerEvents: "none",
+          width: 0,
+          height: 0,
+          overflow: "hidden",
+        }}
+      />
+    </>
+  </>);
+}
 function ClassList({ classes, removeClass }) {
   return (
     <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
@@ -48,9 +111,12 @@ function ClassList({ classes, removeClass }) {
             borderRadius: 4,
             cursor: "pointer",
             fontSize: 12,
+            display: "inline-flex",
+            alignItems: "center",
+            position: "relative",
           }}
-          className={`${c}`}
         >
+          <ColorSwatch cls={c} />
           {c} ×
         </span>
       ))}
@@ -67,7 +133,6 @@ function ClassInput({ addClass }) {
   function getSuggestions(input) {
     if (!input.trim()) return [];
 
-    // Support variant prefixes like "hover:", "md:", "dark:hover:", etc.
     const colonIdx = input.lastIndexOf(":");
     const prefix = colonIdx >= 0 ? input.slice(0, colonIdx + 1) : "";
     const query = colonIdx >= 0 ? input.slice(colonIdx + 1) : input;
@@ -76,7 +141,6 @@ function ClassInput({ addClass }) {
 
     const lower = query.toLowerCase();
 
-    // Prioritise classes that start with the query, then fall back to contains.
     const starts = tailwindClasses.filter((c) => c.startsWith(lower));
     const contains = tailwindClasses.filter(
       (c) => !c.startsWith(lower) && c.includes(lower),
@@ -84,6 +148,8 @@ function ClassInput({ addClass }) {
 
     return [...starts, ...contains].slice(0, 10).map((c) => prefix + c);
   }
+
+
 
   function commit(cls) {
     const trimmed = cls.trim();
@@ -159,14 +225,13 @@ function ClassInput({ addClass }) {
             <li
               key={cls}
               onMouseDown={(e) => {
-                // prevent input blur before commit
                 e.preventDefault();
                 commit(cls);
               }}
               onMouseEnter={() => setHighlightedIndex(i)}
               style={{
-                display: "flex",       // horizontal layout
-                alignItems: "center",  // vertically center the square and text
+                display: "flex",
+                alignItems: "center",
                 justifyContent: "space-between",
                 padding: "4px 8px",
                 cursor: "pointer",
