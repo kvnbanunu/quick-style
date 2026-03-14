@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import tailwindClasses from "./tailwindClasses";
+import { sendClass } from "../tw-runtime/tw-runtime";
 
 export default function ClassEditor({ classes, selected, setClasses }) {
-
   function applyClasses(list) {
     if (!selected) return;
 
@@ -14,7 +14,8 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
   function addClass(cls) {
     if (!cls) return;
-    applyClasses([...classes, cls])
+    applyClasses([...classes, cls]);
+    sendClass(cls);
   }
 
   function removeClass(cls) {
@@ -22,24 +23,15 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   }
 
   if (!selected) {
-    return (
-      <div className="bg-blue-700">
-        Select an Element
-      </div>
-    )
+    return <div className="bg-blue-700">Select an Element</div>;
   } else {
     return (
       <div className="bg-blue-700">
         Class Editor
-        <ClassList
-          classes={classes}
-          removeClass={removeClass}
-        />
-        <ClassInput
-          addClass={addClass}
-        />
+        <ClassList classes={classes} removeClass={removeClass} />
+        <ClassInput addClass={addClass} />
       </div>
-    )
+    );
   }
 }
 
@@ -66,7 +58,6 @@ function ClassList({ classes, removeClass }) {
   );
 }
 
-
 function ClassInput({ addClass }) {
   const [value, setValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -88,7 +79,7 @@ function ClassInput({ addClass }) {
     // Prioritise classes that start with the query, then fall back to contains.
     const starts = tailwindClasses.filter((c) => c.startsWith(lower));
     const contains = tailwindClasses.filter(
-      (c) => !c.startsWith(lower) && c.includes(lower)
+      (c) => !c.startsWith(lower) && c.includes(lower),
     );
 
     return [...starts, ...contains].slice(0, 10).map((c) => prefix + c);
@@ -123,7 +114,7 @@ function ClassInput({ addClass }) {
       commit(
         highlightedIndex >= 0 && suggestions[highlightedIndex]
           ? suggestions[highlightedIndex]
-          : value
+          : value,
       );
     } else if (e.key === "Tab" && suggestions.length > 0) {
       e.preventDefault();
@@ -199,3 +190,4 @@ function ClassInput({ addClass }) {
     </div>
   );
 }
+
