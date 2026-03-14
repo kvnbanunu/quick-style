@@ -3,7 +3,7 @@ import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { getStorage, setStorage } from "./utils/localStorage";
+import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 
 export default function QuickStyle() {
@@ -13,8 +13,6 @@ export default function QuickStyle() {
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
-
-
 
   function turnOffQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
@@ -122,7 +120,7 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
-  //applies selected element classes to the quickstyle box for viewing 
+  //applies selected element classes to the quickstyle box for viewing
   useEffect(() => {
     if (!selected) return;
 
@@ -133,12 +131,15 @@ export default function QuickStyle() {
     syncClasses();
     const observer = new MutationObserver((mutations) => {
       const changedClass = mutations.some(
-        (m) => m.type === "attributes" && m.attributeName === "class"
+        (m) => m.type === "attributes" && m.attributeName === "class",
       );
       if (changedClass) syncClasses();
     });
 
-    observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(selected, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     return () => observer.disconnect();
   }, [selected]);
@@ -146,7 +147,9 @@ export default function QuickStyle() {
   useEffect(() => {
     if (!selected || !(selected instanceof Element)) return;
 
-    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    setClasses(
+      (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
+    );
     updateSelectBox(selected);
     selected.scrollIntoView({ block: "nearest", inline: "nearest" });
     return;
@@ -187,8 +190,10 @@ export default function QuickStyle() {
     };
   }, []);
 
-
-
+  // clear localStorage on app shutdown
+  if (import.meta.hot) {
+    import.meta.hot.on("vite:ws:disconnect", clearStorage());
+  }
 
   if (isOpen) {
     return (
@@ -217,7 +222,6 @@ export default function QuickStyle() {
         <button
           onClick={() => {
             turnOffQuickStyle();
-
           }}
         >
           Close
