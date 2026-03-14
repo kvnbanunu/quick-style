@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tailwindRuntime from "./src/tw-runtime/tw-runtime";
+import { codeUpdaterEndpoint } from "./src/utils/codeUpdaterEndpoint.js";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react({
@@ -13,5 +13,11 @@ export default defineConfig({
     }),
     tailwindcss(),
     tailwindRuntime(),
+    {
+      name: "quick-style-api",
+      configureServer(server) {
+        codeUpdaterEndpoint(server);
+      }
+    }
   ],
 });
