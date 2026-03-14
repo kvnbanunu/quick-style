@@ -29,8 +29,6 @@ export default function QuickStyle() {
     const hoverBox = document.createElement("div");
     const selectBox = document.createElement("div");
 
-
-
     hoverBox.style.position = "absolute";
     hoverBox.style.border = "2px dashed red";
     hoverBox.style.pointerEvents = "none";
@@ -62,6 +60,19 @@ export default function QuickStyle() {
       box.style.height = rect.height + "px";
     }
 
+    function onRightClick(e) {
+      const panel = document.getElementById("quickstyle-editor");
+      if (panel && panel.contains(e.target)) return;
+
+      e.preventDefault(); // optional: prevents the browser menu
+
+      setSelected(null);
+
+      if (selectBoxRef.current) {
+        selectBoxRef.current.style.display = "none";
+      }
+    }
+
     function onMouseMove(e) {
       const panel = document.getElementById("quickstyle-editor");
       if (panel && panel.contains(e.target)) return;
@@ -87,10 +98,12 @@ export default function QuickStyle() {
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("click", onClick, true);
+    document.addEventListener("contextmenu", onRightClick);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
+      document.removeEventListener("contextmenu", onRightClick);
 
       hoverBox.remove();
       selectBox.remove();

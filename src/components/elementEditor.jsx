@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function ClassEditor({classes, selected, setClasses}) {
+export default function ClassEditor({ classes, selected, setClasses }) {
 
   function applyClasses(list) {
     if (!selected) return;
@@ -10,9 +10,9 @@ export default function ClassEditor({classes, selected, setClasses}) {
     selected.setAttribute("class", value);
     setClasses(list);
   }
-  
+
   function addClass(cls) {
-    if(!cls) return;
+    if (!cls) return;
     applyClasses([...classes, cls])
   }
 
@@ -20,18 +20,26 @@ export default function ClassEditor({classes, selected, setClasses}) {
     applyClasses(classes.filter((c) => c !== cls));
   }
 
-  return (
-    <div className="bg-blue-700">
-      Class Editor
-      <ClassList
-        classes={classes}
-        removeClass={removeClass}
-      />
-      <ClassInput 
-        addClass={addClass}
-      />
-    </div>
-  )
+  if (!selected) {
+    return (
+      <div className="bg-blue-700">
+        Select an Element
+      </div>
+    )
+  } else {
+    return (
+      <div className="bg-blue-700">
+        Class Editor
+        <ClassList
+          classes={classes}
+          removeClass={removeClass}
+        />
+        <ClassInput
+          addClass={addClass}
+        />
+      </div>
+    )
+  }
 }
 
 const classes = [
@@ -73,30 +81,30 @@ const classes = [
 ];
 
 
-function ClassList({classes, removeClass}) {
+function ClassList({ classes, removeClass }) {
   return (
     <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
-        {classes.map((c) => (
-          <span
-            key={c}
-            onClick={() => removeClass(c)}
-            style={{
-              background: "#333",
-              padding: "3px 6px",
-              borderRadius: 4,
-              cursor: "pointer",
-              fontSize: 12,
-            }}
-          >
-            {c} ×
-          </span>
-        ))}
-      </div>
+      {classes.map((c) => (
+        <span
+          key={c}
+          onClick={() => removeClass(c)}
+          style={{
+            background: "#333",
+            padding: "3px 6px",
+            borderRadius: 4,
+            cursor: "pointer",
+            fontSize: 12,
+          }}
+        >
+          {c} ×
+        </span>
+      ))}
+    </div>
   )
 }
 
 
-function ClassInput({addClass}) {
+function ClassInput({ addClass }) {
 
   return (
     <div>
