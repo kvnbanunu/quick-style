@@ -15,22 +15,26 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
   function addClass(cls) {
     if (!cls) return;
-    applyClasses([...classes, cls]);
-    saveChanges();
+
+    const newClasses = [...classes, cls];
+
+    applyClasses(newClasses);
     sendClass(cls);
+    
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+
+    saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
   }
 
-  async function saveChanges() {
-    console.log(selected);
-    const {filePath, line, col} = getReactSourceInfo(selected);
+  async function saveChanges(classesToSave, filePath, lineNum, column) {
     await fetch("/api/update-element", {
            method: "POST",
            headers: { "Content-Type": "application/json" },
            body: JSON.stringify({
-             classes: classes,
+             classes: classesToSave,
              filePath: filePath,
-             line_number: line,
-             column_number: col,
+             line_number: lineNum,
+             column_number: column,
            })
          })
            .then(res => res.json())
@@ -39,8 +43,12 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   }
 
   function removeClass(cls) {
-    applyClasses(classes.filter((c) => c !== cls));
-    saveChanges();
+    const newClasses = classes.filter((c) => c !== cls);
+    applyClasses(newClasses);
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+    
+    saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
   }
 
   if (!selected) {

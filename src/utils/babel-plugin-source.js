@@ -21,7 +21,7 @@ export default function ({ types: t }) {
         path.node.attributes.push(
           t.jsxAttribute(
             t.jsxIdentifier("data-qs-src"),
-            t.stringLiteral(`${filename}:${line}:${column}`),
+            t.stringLiteral(`${filename}#${line}#${column}`),
           ),
         );
       },
