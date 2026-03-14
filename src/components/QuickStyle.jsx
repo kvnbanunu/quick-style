@@ -3,6 +3,8 @@ import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import ElementTextEditor from "./elementTextEditor";
+import { getStorage, setStorage } from "./utils/localStorage";
+import { stringToHTMLElements } from "./utils/util";
 
 
 export default function QuickStyle() {
@@ -10,19 +12,59 @@ export default function QuickStyle() {
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
 
+  const [temp, setTemp] = useState(null);
+
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
+
+
 
   function turnOffHoverBox() {
     if (hoverBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("contextmenu", onRightClick);
     }
   }
 
   function turnOnHoverBox() {
     if (hoverBoxRef.current) {
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("click", onClick, true);
+      document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
     }
+  }
+
+  function onClick(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Always store the latest clicked element
+    setStorage("selected", e.target.outerHTML);
+    selectElement(e.target);
+  }
+
+  function onRightClick(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    e.preventDefault(); // optional: prevents the browser menu
+
+    setStorage("selected", null);
+    setSelected(null);
+    updateSelectBox(null);
+  }
+
+  function onMouseMove(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    updateBox(e.target, hoverBoxRef.current);
   }
 
   function updateSelectBox(el) {
@@ -34,7 +76,10 @@ export default function QuickStyle() {
       return;
     }
 
+    if (!document.body.contains(el)) return;
+
     const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return; // skip if size is zero
 
     box.style.display = "block";
     box.style.left = rect.left + window.scrollX + "px";
@@ -47,9 +92,6 @@ export default function QuickStyle() {
     if (!el) return;
 
     setSelected(el);
-    setClasses((el.getAttribute("class") || "").split(/\s+/).filter(Boolean));
-    updateSelectBox(el);
-    el.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
   function updateBox(el, box) {
@@ -68,8 +110,24 @@ export default function QuickStyle() {
   }
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!temp) return;
+    if (typeof (temp) !== "string") return;
+    if (temp.includes("<")) {
+      setSelected(stringToHTMLElements(temp).root);
+    }
+    return;
+  }, [temp]);
 
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
+    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    updateSelectBox(selected);
+    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return;
+  }, [selected]);
+
+  useEffect(() => {
     const hoverBox = document.createElement("div");
     const selectBox = document.createElement("div");
 
@@ -89,47 +147,23 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
+    setIsOpen(getStorage("isOpen"));
+    if (isOpen) {
+      turnOnHoverBox();
 
-    function onRightClick(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
-
-      e.preventDefault(); // optional: prevents the browser menu
-
-      setSelected(null);
-      updateSelectBox(null);
     }
+    setSelected(stringToHTMLElements(getStorage("selected")));
 
-    function onMouseMove(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
+    turnOnHoverBox();
 
-      updateBox(e.target, hoverBoxRef.current);
-    }
-
-    function onClick(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      selectElement(e.target);
-    }
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("click", onClick, true);
-    document.addEventListener("contextmenu", onRightClick);
 
     return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
-
       hoverBox.remove();
       selectBox.remove();
     };
-  }, [isOpen]);
+  }, []);
+
+
 
 
   if (isOpen) {
@@ -161,6 +195,7 @@ export default function QuickStyle() {
           onClick={() => {
             turnOffHoverBox();
             setIsOpen(false);
+            setStorage("isOpen", isOpen);
           }}
         >
           Close
@@ -173,6 +208,7 @@ export default function QuickStyle() {
         onClick={() => {
           turnOnHoverBox();
           setIsOpen(true);
+          setStorage("isOpen", isOpen);
         }}
         className="absolute bottom-10 right-10 z-10"
       >
