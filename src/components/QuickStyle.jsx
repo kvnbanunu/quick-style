@@ -164,7 +164,7 @@ export default function QuickStyle() {
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded absolute bottom-10 right-10 flex flex-col"
+        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
       >
         <p className="text-lg">Quick Style Editor</p>
         <ElementTraverser
@@ -202,7 +202,7 @@ export default function QuickStyle() {
           turnOnHoverBox();
           setIsOpen(true);
         }}
-        className="absolute bottom-10 right-10 z-10"
+        className="fixed bottom-10 right-10 z-10"
       >
         Quick Style!
       </button>
