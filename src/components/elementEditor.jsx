@@ -3,7 +3,7 @@ import tailwindClasses from "./tailwindClasses";
 import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 
-export default function ClassEditor({ classes, selected, oldSelected, setClasses }) {
+export default function ClassEditor({ classes, selected, oldSelected, setClasses, setSelected }) {
 
   function applyClasses(list) {
     if (!selected) return;
@@ -20,14 +20,16 @@ export default function ClassEditor({ classes, selected, oldSelected, setClasses
     const newClasses = [...classes, cls];
 
     applyClasses(newClasses);
-    sendClass(cls);
     
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
-
-    saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
+    
+    console.log(selected);
+    // saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
+    sendClass(cls);
   }
 
   async function saveChanges(classesToSave, filePath, lineNum, column) {
+    setStorage("qs-selected", selected);
     await fetch("/api/update-element", {
            method: "POST",
            headers: { "Content-Type": "application/json" },

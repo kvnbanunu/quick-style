@@ -127,7 +127,7 @@ export default function QuickStyle() {
   useEffect(() => {
     //applies selected element classes to the quickstyle box for viewing 
     if (!selected) return;
-
+    console.log(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
     };
@@ -142,18 +142,11 @@ export default function QuickStyle() {
 
     observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
 
-
-    if (!selected || !(selected instanceof Element)) return;
-    console.log(selected);
-    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
-    updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
     
     return () => observer.disconnect();
   }, [selected]);
 
   useEffect(() => {
-    console.log(isOpen);
     if (isOpen) {
       setSelected(stringToHTMLElements(getStorage("selected")));
       turnOnQuickStyle();
@@ -208,6 +201,7 @@ export default function QuickStyle() {
           classes={classes}
           selected={selected}
           setClasses={setClasses}
+          setSelected={setSelected}
         />
         <ElementDragger
           updateBox={updateBox}
