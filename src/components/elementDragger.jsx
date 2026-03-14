@@ -10,6 +10,8 @@ export default function ElementDragger({updateBox, selected, hoverBoxRef, select
     function onMouseDown(e) {
       if (!selected) return;
       if (e.target !== selected) return;
+      if(e.target.tagName === "BODY") return;
+
 
       draggingRef.current = true;
 

@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import tailwindClasses from "./tailwindClasses";
+import { sendClass } from "../tw-runtime/tw-runtime";
 
 export default function ClassEditor({ classes, selected, setClasses }) {
-
   function applyClasses(list) {
     if (!selected) return;
 
@@ -14,8 +14,8 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
   function addClass(cls) {
     if (!cls) return;
-    if (classes.includes(cls)) return;
-    applyClasses([...classes, cls])
+    applyClasses([...classes, cls]);
+    sendClass(cls);
   }
 
   function removeClass(cls) {
@@ -23,24 +23,15 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   }
 
   if (!selected) {
-    return (
-      <div className="bg-blue-700">
-        Select an Element
-      </div>
-    )
+    return <div className="bg-blue-700">Select an Element</div>;
   } else {
     return (
       <div className="bg-blue-700">
         Class Editor
-        <ClassList
-          classes={classes}
-          removeClass={removeClass}
-        />
-        <ClassInput
-          addClass={addClass}
-        />
+        <ClassList classes={classes} removeClass={removeClass} />
+        <ClassInput addClass={addClass} />
       </div>
-    )
+    );
   }
 }
 
@@ -58,6 +49,7 @@ function ClassList({ classes, removeClass }) {
             cursor: "pointer",
             fontSize: 12,
           }}
+          className={`${c}`}
         >
           {c} ×
         </span>
@@ -65,7 +57,6 @@ function ClassList({ classes, removeClass }) {
     </div>
   );
 }
-
 
 function ClassInput({ addClass }) {
   const [value, setValue] = useState("");
@@ -86,7 +77,7 @@ function ClassInput({ addClass }) {
 
     const starts = tailwindClasses.filter((c) => c.startsWith(lower));
     const contains = tailwindClasses.filter(
-      (c) => !c.startsWith(lower) && c.includes(lower)
+      (c) => !c.startsWith(lower) && c.includes(lower),
     );
 
     return [...starts, ...contains].slice(0, 10).map((c) => prefix + c);
@@ -121,7 +112,7 @@ function ClassInput({ addClass }) {
       commit(
         highlightedIndex >= 0 && suggestions[highlightedIndex]
           ? suggestions[highlightedIndex]
-          : value
+          : value,
       );
     } else if (e.key === "Tab" && suggestions.length > 0) {
       e.preventDefault();
@@ -172,6 +163,9 @@ function ClassInput({ addClass }) {
               }}
               onMouseEnter={() => setHighlightedIndex(i)}
               style={{
+                display: "flex",       // horizontal layout
+                alignItems: "center",  // vertically center the square and text
+                justifyContent: "space-between",
                 padding: "4px 8px",
                 cursor: "pointer",
                 fontSize: 12,
@@ -180,7 +174,13 @@ function ClassInput({ addClass }) {
                 color: "#fff",
               }}
             >
-              {cls}
+              <span>{cls}</span>
+
+              {/* Tailwind preview square */}
+              <div
+                className={`${cls} w-4 h-4 rounded border border-gray-300 ml-2`}
+                style={{ minWidth: 16, minHeight: 16 }}
+              ></div>
             </li>
           ))}
         </ul>
@@ -188,3 +188,4 @@ function ClassInput({ addClass }) {
     </div>
   );
 }
+

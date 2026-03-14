@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
+import ElementTextEditor from "./elementTextEditor";
 
 
 export default function QuickStyle() {
