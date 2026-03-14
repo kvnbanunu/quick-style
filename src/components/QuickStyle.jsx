@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
+import ElementDragger from "./elementDragger";
 
 
 export default function QuickStyle() {
@@ -23,6 +24,21 @@ export default function QuickStyle() {
     }
   }
 
+  function updateBox(el, box) {
+      if (!box) return;
+      if (!el) {
+        box.style.display = "none";
+        return;
+      }
+
+      const rect = el.getBoundingClientRect();
+
+      box.style.left = rect.left + window.scrollX + "px";
+      box.style.top = rect.top + window.scrollY + "px";
+      box.style.width = rect.width + "px";
+      box.style.height = rect.height + "px";
+    }
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -45,20 +61,6 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    function updateBox(el, box) {
-      if (!box) return;
-      if (!el) {
-        box.style.display = "none";
-        return;
-      }
-
-      const rect = el.getBoundingClientRect();
-
-      box.style.left = rect.left + window.scrollX + "px";
-      box.style.top = rect.top + window.scrollY + "px";
-      box.style.width = rect.width + "px";
-      box.style.height = rect.height + "px";
-    }
 
     function onRightClick(e) {
       const panel = document.getElementById("quickstyle-editor");
@@ -124,6 +126,12 @@ export default function QuickStyle() {
           selected={selected}
           setClasses={setClasses}
         />
+        <ElementDragger
+          updateBox={updateBox} 
+          selected={selected}
+          hoverBoxRef={hoverBoxRef}
+          selectBoxRef={selectBoxRef} 
+        />
         <button
           onClick={() => {
             turnOffHoverBox();
@@ -143,7 +151,7 @@ export default function QuickStyle() {
         }}
         className="absolute bottom-10 right-10 z-10"
       >
-        Click Me!
+        Quick Style!
       </button>
     );
   }
