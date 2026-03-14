@@ -1,0 +1,1 @@
+export { default as QuickStyle } from "./src/components/QuickStyle.jsx";
