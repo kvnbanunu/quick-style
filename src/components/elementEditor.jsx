@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import tailwindClasses from "./tailwindClasses";
 import { sendClass } from "../tw-runtime/tw-runtime";
+import { getReactSourceInfo } from "../utils/reactSourceInfo";
 
 export default function ClassEditor({ classes, selected, setClasses }) {
   function applyClasses(list) {
@@ -15,11 +16,31 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   function addClass(cls) {
     if (!cls) return;
     applyClasses([...classes, cls]);
-    //sendClass(cls);
+    saveChanges();
+    sendClass(cls);
+  }
+
+  async function saveChanges() {
+    console.log(selected);
+    const {filePath, line, col} = getReactSourceInfo(selected);
+    await fetch("/api/update-element", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({
+             classes: classes,
+             filePath: filePath,
+             line_number: line,
+             column_number: col,
+           })
+         })
+           .then(res => res.json())
+           .then(data => console.log("Backend response:", data))
+           .catch(console.error);
   }
 
   function removeClass(cls) {
     applyClasses(classes.filter((c) => c !== cls));
+    saveChanges();
   }
 
   if (!selected) {
