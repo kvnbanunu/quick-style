@@ -157,7 +157,6 @@ export default function QuickStyle() {
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
         />
-        <ElementTextEditor/>
         <button
           onClick={() => {
             turnOffHoverBox();
