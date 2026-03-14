@@ -49,6 +49,7 @@ function ClassList({ classes, removeClass }) {
             cursor: "pointer",
             fontSize: 12,
           }}
+          className={`${c}`}
         >
           {c} ×
         </span>
@@ -164,6 +165,9 @@ function ClassInput({ addClass }) {
               }}
               onMouseEnter={() => setHighlightedIndex(i)}
               style={{
+                display: "flex",       // horizontal layout
+                alignItems: "center",  // vertically center the square and text
+                justifyContent: "space-between",
                 padding: "4px 8px",
                 cursor: "pointer",
                 fontSize: 12,
@@ -172,7 +176,13 @@ function ClassInput({ addClass }) {
                 color: "#fff",
               }}
             >
-              {cls}
+              <span>{cls}</span>
+
+              {/* Tailwind preview square */}
+              <div
+                className={`${cls} w-4 h-4 rounded border border-gray-300 ml-2`}
+                style={{ minWidth: 16, minHeight: 16 }}
+              ></div>
             </li>
           ))}
         </ul>
