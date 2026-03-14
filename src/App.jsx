@@ -9,11 +9,11 @@ function App() {
 
   return (
     <>
-      <div className="bg-green-400">
+      <div className="bg-red-500">
         Test Element
-        <div className="text-ellipsis text-yellow-400">
+        <div className="text-ellipsis text-yellow-400 bg-red-400">
           Child Element
-          <p className="text-red-500">Paragraph</p><p className="gap-y-64">Paragraph</p>
+          <p className="">Paragraph</p><p className="gap-y-64">Paragraph</p>
         </div>
       </div>
       <Example />

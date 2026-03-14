@@ -23,15 +23,14 @@ export default function ClassEditor({ classes, selected, oldSelected, setClasses
 
     applyClasses(newClasses);
     
-    sendClass(cls);
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
     
-    console.log(selected);
     saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
+    sendClass(cls);
   }
 
   async function saveChanges(classesToSave, filePath, lineNum, column) {
-    setStorage("selected", selected);
+    setStorage("selected", selected.outerHTML);
     await fetch("/api/update-element", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

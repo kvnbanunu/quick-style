@@ -128,6 +128,7 @@ export default function QuickStyle() {
     //applies selected element classes to the quickstyle box for viewing 
     if (!selected) return;
     console.log(selected);
+    updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
     };
