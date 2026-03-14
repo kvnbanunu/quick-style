@@ -123,8 +123,9 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
-  //applies selected element classes to the quickstyle box for viewing 
+  
   useEffect(() => {
+    //applies selected element classes to the quickstyle box for viewing 
     if (!selected) return;
 
     const syncClasses = () => {
@@ -141,19 +142,18 @@ export default function QuickStyle() {
 
     observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
 
+
+    if (!selected || !(selected instanceof Element)) return;
+    console.log(selected);
+    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    updateSelectBox(selected);
+    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+    
     return () => observer.disconnect();
   }, [selected]);
 
   useEffect(() => {
-    if (!selected || !(selected instanceof Element)) return;
-
-    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
-    updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-    return;
-  }, [selected]);
-
-  useEffect(() => {
+    console.log(isOpen);
     if (isOpen) {
       setSelected(stringToHTMLElements(getStorage("selected")));
       turnOnQuickStyle();
@@ -180,7 +180,7 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    setIsOpen(getStorage("isOpen"));
+    setIsOpen(getStorage("isOpen") === "true");
 
     return () => {
       hoverBox.remove();
