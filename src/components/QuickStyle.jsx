@@ -20,10 +20,10 @@ export default function QuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
-      console.log(selectBoxRef.current.style.display);
-      document.removeEventListener("mousemove", onMouseMove);
+
+      // document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
+      // document.removeEventListener("contextmenu", onRightClick);
       setIsOpen(false);
       setStorage("isOpen", false);
     }
@@ -31,9 +31,9 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      document.addEventListener("mousemove", onMouseMove);
+      // document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
-      document.addEventListener("contextmenu", onRightClick);
+      // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
       setIsOpen(true);
@@ -42,8 +42,11 @@ export default function QuickStyle() {
   }
 
   function onClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
+
 
     e.preventDefault();
     e.stopPropagation();
@@ -54,6 +57,8 @@ export default function QuickStyle() {
   }
 
   function onRightClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -65,6 +70,8 @@ export default function QuickStyle() {
   }
 
   function onMouseMove(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -95,12 +102,6 @@ export default function QuickStyle() {
   function selectElement(el) {
     if (!el) return;
 
-    // example for REESE
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
-    console.log(fileName);
-    console.log(lineNumber);
-    console.log(columnNumber);
-
     setSelected(el);
   }
   function getElementClasses(el) {
@@ -122,8 +123,9 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
-  //applies selected element classes to the quickstyle box for viewing 
+  
   useEffect(() => {
+    //applies selected element classes to the quickstyle box for viewing 
     if (!selected) return;
 
     const syncClasses = () => {
@@ -140,19 +142,18 @@ export default function QuickStyle() {
 
     observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
 
+
+    if (!selected || !(selected instanceof Element)) return;
+    console.log(selected);
+    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    updateSelectBox(selected);
+    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+    
     return () => observer.disconnect();
   }, [selected]);
 
   useEffect(() => {
-    if (!selected || !(selected instanceof Element)) return;
-
-    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
-    updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-    return;
-  }, [selected]);
-
-  useEffect(() => {
+    console.log(isOpen);
     if (isOpen) {
       setSelected(stringToHTMLElements(getStorage("selected")));
       turnOnQuickStyle();
@@ -179,7 +180,7 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    setIsOpen(getStorage("isOpen"));
+    setIsOpen(getStorage("isOpen") === "true");
 
     return () => {
       hoverBox.remove();
@@ -231,7 +232,6 @@ export default function QuickStyle() {
         onClick={() => {
           turnOnQuickStyle();
           setIsOpen(true);
-          setStorage("isOpen", true);
         }}
         className="fixed bottom-10 right-10 z-10"
       >

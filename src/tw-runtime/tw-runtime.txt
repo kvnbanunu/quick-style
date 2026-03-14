@@ -1,2 +1,5 @@
-gap-9
-gap-y-64
+bg-red-400
+bg-blue-300
+bg-blue-300
+pb-10
+ml-10
