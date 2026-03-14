@@ -3,7 +3,7 @@ import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import ElementTextEditor from "./elementTextEditor";
-
+import { getReactSourceInfo } from "../utils/reactSourceInfo";
 
 export default function QuickStyle() {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,6 +45,11 @@ export default function QuickStyle() {
 
   function selectElement(el) {
     if (!el) return;
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
+    console.log(fileName);
+    console.log(lineNumber);
+    console.log(columnNumber);
 
     setSelected(el);
     setClasses((el.getAttribute("class") || "").split(/\s+/).filter(Boolean));
@@ -89,7 +94,6 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-
     function onRightClick(e) {
       const panel = document.getElementById("quickstyle-editor");
       if (panel && panel.contains(e.target)) return;
@@ -131,9 +135,7 @@ export default function QuickStyle() {
     };
   }, [isOpen]);
 
-
   if (isOpen) {
-
     return (
       <div
         id="quickstyle-editor"
@@ -157,7 +159,7 @@ export default function QuickStyle() {
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
         />
-        <ElementTextEditor/>
+        <ElementTextEditor />
         <button
           onClick={() => {
             turnOffHoverBox();
@@ -170,7 +172,8 @@ export default function QuickStyle() {
     );
   } else {
     return (
-      <button id="quickstyle-editor"
+      <button
+        id="quickstyle-editor"
         onClick={() => {
           turnOnHoverBox();
           setIsOpen(true);
@@ -182,3 +185,4 @@ export default function QuickStyle() {
     );
   }
 }
+
