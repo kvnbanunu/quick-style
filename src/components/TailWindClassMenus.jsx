@@ -87,7 +87,7 @@ function buildGroups() {
 export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
   const groups = useMemo(buildGroups, []);
   const [open, setOpen] = useState(() =>
-    Object.fromEntries(groups.map((g) => [g.name, g.name === "Spacing"]))
+    Object.fromEntries(groups.map((g) => [g.name, false]))
   );
 
   return (

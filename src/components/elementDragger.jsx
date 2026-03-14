@@ -8,8 +8,22 @@ export default function ElementDragger({
 }) {
   const draggingRef = useRef(false);
   const offsetRef = useRef({ x: 0, y: 0 });
+  function canUseParentContainer(el) {
+    const parent = el.parentElement;
+    if (!(parent instanceof HTMLElement)) return false;
 
+    const isLayoutRoot =
+      parent === document.body ||
+      parent === document.documentElement ||
+      parent?.id === "root";
+
+    if (isLayoutRoot) return false;
+
+    const parentStyle = window.getComputedStyle(parent);
+    return parentStyle.display !== "inline" && parentStyle.overflow === "contents";
+  }
   function ensureParentContains(el) {
+    if (!canUseParentContainer(el)) return;
     const parent = el.parentElement;
     if (!parent) return;
 
@@ -46,11 +60,7 @@ export default function ElementDragger({
         y: e.clientY - rect.top,
       };
       const parent = selected.parentElement;
-      const isLayoutRoot =
-        parent === document.body ||
-        parent === document.documentElement ||
-        parent?.id === "root";
-      if (parent instanceof HTMLElement && !isLayoutRoot) {
+      if (canUseParentContainer(selected)) {
         const parentStyle = window.getComputedStyle(parent);
         const parentRect = parent.getBoundingClientRect();
 
@@ -89,12 +99,8 @@ export default function ElementDragger({
 
       if (draggingRef.current && selected) {
         const parent = selected.parentElement;
-        const isLayoutRoot =
-          parent === document.body ||
-          parent === document.documentElement ||
-          parent?.id === "root";
 
-        if (parent instanceof HTMLElement && !isLayoutRoot) {
+        if (canUseParentContainer(selected)) {
           const parentRect = parent.getBoundingClientRect();
 
           let x = e.clientX - parentRect.left - offsetRef.current.x + parent.scrollLeft;
