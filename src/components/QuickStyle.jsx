@@ -2,10 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import ElementTextEditor from "./elementTextEditor";
+import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import { getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
-
 
 export default function QuickStyle() {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,6 +90,12 @@ export default function QuickStyle() {
   function selectElement(el) {
     if (!el) return;
 
+    // example for REESE
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
+    console.log(fileName);
+    console.log(lineNumber);
+    console.log(columnNumber);
+
     setSelected(el);
   }
 
@@ -167,7 +172,6 @@ export default function QuickStyle() {
 
 
   if (isOpen) {
-
     return (
       <div
         id="quickstyle-editor"
@@ -204,7 +208,8 @@ export default function QuickStyle() {
     );
   } else {
     return (
-      <button id="quickstyle-editor"
+      <button
+        id="quickstyle-editor"
         onClick={() => {
           turnOnHoverBox();
           setIsOpen(true);

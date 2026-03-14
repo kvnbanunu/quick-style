@@ -8,12 +8,27 @@ import path from "path";
 export default function tailwindRuntime() {
   const runtimeFile = path.resolve("src/tw-runtime/tw-runtime.txt");
 
+  function clearFile() {
+    fs.writeFileSync(runtimeFile, "");
+  }
+
   return {
     name: "tailwind-runtime",
 
     configureServer(server) {
+      clearFile();
+
       server.ws.on("tw:class", (cls) => {
         fs.appendFileSync(runtimeFile, cls + "\n");
+      });
+
+      process.on("SIGINT", () => {
+        clearFile();
+        process.exit();
+      });
+      process.on("SIGTERM", () => {
+        clearFile();
+        process.exit();
       });
     },
   };
