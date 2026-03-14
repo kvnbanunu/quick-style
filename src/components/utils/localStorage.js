@@ -10,7 +10,7 @@ export function removeStorage(key) {
   localStorage.removeItem(key);
 }
 
-export const localStorageKeys = ["isOpen", "selected"];
+export const localStorageKeys = ["quick-style-isOpen", "quick-style-selected"];
 
 export function clearStorage() {
   for (const key in localStorageKeys) {
