@@ -1,15 +1,38 @@
-export default function ElementEditor() {
+import { useEffect, useState } from "react";
+
+export default function ClassEditor({classes, selected, setClasses}) {
+
+  function applyClasses(list) {
+    if (!selected) return;
+
+    const value = list.join(" ");
+
+    selected.setAttribute("class", value);
+    setClasses(list);
+  }
+  
+  function addClass(cls) {
+    if(!cls) return;
+    applyClasses([...classes, cls])
+  }
+
+  function removeClass(cls) {
+    applyClasses(classes.filter((c) => c !== cls));
+  }
 
   return (
-    <div class="bg-blue-700">
+    <div className="bg-blue-700">
       Class Editor
-      <ClassInput/>
+      <ClassList
+        classes={classes}
+        removeClass={removeClass}
+      />
+      <ClassInput 
+        addClass={addClass}
+      />
     </div>
   )
 }
-
-
-const addedClasses = [];
 
 const classes = [
   "bg-red-500",
@@ -49,26 +72,45 @@ const classes = [
   "justify-center"
 ];
 
-function addClass(cls) {
-  console.log("adding class");
-  addedClasses[addedClasses.length] = cls;  
-  console.log(addedClasses);
+
+function ClassList({classes, removeClass}) {
+  return (
+    <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
+        {classes.map((c) => (
+          <span
+            key={c}
+            onClick={() => removeClass(c)}
+            style={{
+              background: "#333",
+              padding: "3px 6px",
+              borderRadius: 4,
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            {c} ×
+          </span>
+        ))}
+      </div>
+  )
 }
 
-function ClassInput() {
+
+function ClassInput({addClass}) {
+
   return (
     <div>
-      <input 
-      placeholder="add a class..."
-      list="class-list"
-      id="country-choice" 
-      name="country-choice" 
-      onKeyDown={(e) => {
-        if(e.key === "Enter") {
-          addClass(e.target.value.trim())
-          e.target.value = ""
-        }
-      }}
+      <input
+        placeholder="add a class..."
+        list="class-list"
+        id="country-choice"
+        name="country-choice"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            addClass(e.target.value.trim())
+            e.target.value = ""
+          }
+        }}
       />
       <datalist id="class-list">
         {classes.map((classes) => (
