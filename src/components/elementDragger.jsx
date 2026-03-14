@@ -8,24 +8,27 @@ export default function ElementDragger({
 }) {
   const draggingRef = useRef(false);
   const offsetRef = useRef({ x: 0, y: 0 });
+
   function canUseParentContainer(el) {
-    const parent = el.parentElement;
+    const parent = el?.parentElement;
     if (!(parent instanceof HTMLElement)) return false;
 
     const isLayoutRoot =
       parent === document.body ||
       parent === document.documentElement ||
-      parent?.id === "root";
+      parent.id === "root";
 
     if (isLayoutRoot) return false;
 
     const parentStyle = window.getComputedStyle(parent);
-    return parentStyle.display !== "inline" && parentStyle.overflow === "contents";
+    return parentStyle.display !== "inline" && parentStyle.display !== "contents";
   }
+
   function ensureParentContains(el) {
     if (!canUseParentContainer(el)) return;
+
     const parent = el.parentElement;
-    if (!parent) return;
+    if (!(parent instanceof HTMLElement)) return;
 
     const parentRect = parent.getBoundingClientRect();
     const childRect = el.getBoundingClientRect();
@@ -40,8 +43,8 @@ export default function ElementDragger({
     if (overflowBottom > 0) newHeight += overflowBottom;
 
     if (overflowRight > 0 || overflowBottom > 0) {
-      parent.style.width = newWidth + "px";
-      parent.style.height = newHeight + "px";
+      parent.style.width = Math.ceil(newWidth) + "px";
+      parent.style.height = Math.ceil(newHeight) + "px";
     }
   }
 
@@ -54,17 +57,17 @@ export default function ElementDragger({
       draggingRef.current = true;
 
       const rect = selected.getBoundingClientRect();
-
       offsetRef.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+
       const parent = selected.parentElement;
-      if (canUseParentContainer(selected)) {
+
+      if (canUseParentContainer(selected) && parent instanceof HTMLElement) {
         const parentStyle = window.getComputedStyle(parent);
         const parentRect = parent.getBoundingClientRect();
 
-        //make parent containing block for child so the child stays inside it
         if (parentStyle.position === "static") {
           parent.style.position = "relative";
         }
@@ -80,7 +83,6 @@ export default function ElementDragger({
         selected.style.left = rect.left - parentRect.left + parent.scrollLeft + "px";
         selected.style.top = rect.top - parentRect.top + parent.scrollTop + "px";
       } else {
-        //fallback for normal parent elements
         const selectedStyle = window.getComputedStyle(selected);
         if (selectedStyle.position === "static") {
           selected.style.width = rect.width + "px";
@@ -93,6 +95,7 @@ export default function ElementDragger({
         selected.style.top = rect.top + window.scrollY + "px";
       }
     }
+
     function onMouseMove(e) {
       const panel = document.getElementById("quickstyle-editor");
       if (!draggingRef.current && panel && panel.contains(e.target)) return;
@@ -100,7 +103,7 @@ export default function ElementDragger({
       if (draggingRef.current && selected) {
         const parent = selected.parentElement;
 
-        if (canUseParentContainer(selected)) {
+        if (canUseParentContainer(selected) && parent instanceof HTMLElement) {
           const parentRect = parent.getBoundingClientRect();
 
           let x = e.clientX - parentRect.left - offsetRef.current.x + parent.scrollLeft;
@@ -130,7 +133,6 @@ export default function ElementDragger({
         }
 
         ensureParentContains(selected);
-
         updateBox(selected, selectBoxRef.current);
         return;
       }
@@ -150,8 +152,7 @@ export default function ElementDragger({
       document.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("mousemove", onMouseMove);
-    }
+    };
   }, [selected, updateBox, hoverBoxRef, selectBoxRef]);
 
   return <div></div>;
