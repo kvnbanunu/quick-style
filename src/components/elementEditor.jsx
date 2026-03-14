@@ -15,7 +15,7 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   function addClass(cls) {
     if (!cls) return;
     applyClasses([...classes, cls]);
-    sendClass(cls);
+    //sendClass(cls);
   }
 
   function removeClass(cls) {
@@ -43,7 +43,7 @@ function ColorSwatch({ cls }) {
     if (!probe) return;
 
     const styles = window.getComputedStyle(probe);
-
+    //apply only to styles that will have colour values
     if (cls.startsWith("bg-") || cls.startsWith("from-") || cls.startsWith("via-") || cls.startsWith("to-")) {
       setColor(styles.backgroundColor);
       return;
@@ -61,7 +61,7 @@ function ColorSwatch({ cls }) {
 
     setColor(null);
   }, [cls]);
-
+  //consider a class transparent if it has no color or is explicitly transparent
   const isTransparent =
     !color ||
     color === "rgba(0, 0, 0, 0)" ||
