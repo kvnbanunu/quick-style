@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 
@@ -19,10 +18,10 @@ export default function QuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
-      console.log(selectBoxRef.current.style.display);
-      document.removeEventListener("mousemove", onMouseMove);
+
+      // document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
+      // document.removeEventListener("contextmenu", onRightClick);
       // setIsOpen(false);
       setStorage("quick-style-isOpen", false);
     }
@@ -30,9 +29,9 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      document.addEventListener("mousemove", onMouseMove);
+      // document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
-      document.addEventListener("contextmenu", onRightClick);
+      // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
       // setIsOpen(true);
@@ -41,6 +40,8 @@ export default function QuickStyle() {
   }
 
   function onClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -53,6 +54,8 @@ export default function QuickStyle() {
   }
 
   function onRightClick(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -64,6 +67,8 @@ export default function QuickStyle() {
   }
 
   function onMouseMove(e) {
+    if (!isOpen) return;
+
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
@@ -94,12 +99,6 @@ export default function QuickStyle() {
   function selectElement(el) {
     if (!el) return;
 
-    // example for REESE
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
-    console.log(fileName);
-    console.log(lineNumber);
-    console.log(columnNumber);
-
     setSelected(el);
   }
   function getElementClasses(el) {
@@ -121,10 +120,11 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
+
   //applies selected element classes to the quickstyle box for viewing
   useEffect(() => {
     if (!selected) return;
-
+    console.log(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
     };
@@ -187,7 +187,7 @@ export default function QuickStyle() {
     selectBoxRef.current = selectBox;
 
     const isOpenKey = getStorage("quick-style-isOpen");
-    setIsOpenInit(isOpenKey === true || isOpenKey === "true");
+    setIsOpenInit(true);
     setIsOpen(isOpenKey === true || isOpenKey === "true");
 
     return () => {
@@ -205,7 +205,7 @@ export default function QuickStyle() {
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-md h-md min-h-48 z-10 rounded absolute bottom-10 right-10 flex flex-col justify-between"
+        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
       >
         <p className="text-lg">Quick Style Editor</p>
         <ElementTraverser
@@ -218,6 +218,7 @@ export default function QuickStyle() {
           classes={classes}
           selected={selected}
           setClasses={setClasses}
+          setSelected={setSelected}
         />
         <ElementDragger
           updateBox={updateBox}
@@ -240,9 +241,8 @@ export default function QuickStyle() {
         id="quickstyle-editor"
         onClick={() => {
           setIsOpen(true);
-          setStorage("quick-style-isOpen", true);
         }}
-        className="absolute bottom-10 right-10 z-10"
+        className="fixed bottom-10 right-10 z-10"
       >
         Quick Style!
       </button>
