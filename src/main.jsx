@@ -11,17 +11,17 @@ createRoot(document.getElementById("root")).render(
       <div className="mx-auto max-w-xl rounded-xl border border-slate-300 bg-white p-6 shadow-lg">
         <h1 className="mb-4 text-2xl font-bold text-slate-800">Test Element</h1>
 
-        <div className="space-y-3 rounded-lg bg-slate-50 p-4">
-          <div className="rounded-md px-3 py-2">
+        <div className="space-y-3 rounded-lg bg-slate-50 p-4 bg-red-600">
+          <div className="rounded-md px-3 py-2 bg-slate-500">
             Child Element
           </div>
 
-          <p className="rounded border bg-emerald-50 px-3 py-2 text-sm">
+          <p className="rounded border px-3 py-2 text-sm">
             Paragraph
           </p>
 
           <a href="https://www.google.com" target="_blank" rel="noopener noreferrer">
-            <button className="rounded-md bg-purple-600 px-4 py-2 font-medium text-white">
+            <button className="rounded-md px-4 py-2 font-medium">
               Test Button
             </button>
           </a>
