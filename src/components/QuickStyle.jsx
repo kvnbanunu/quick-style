@@ -121,22 +121,22 @@ export default function QuickStyle() {
 
     selectElement(orderedElements[nextIndex]);
   }
-  }
+
 
   function updateBox(el, box) {
-      if (!box) return;
-      if (!el) {
-        box.style.display = "none";
-        return;
-      }
-
-      const rect = el.getBoundingClientRect();
-
-      box.style.left = rect.left + window.scrollX + "px";
-      box.style.top = rect.top + window.scrollY + "px";
-      box.style.width = rect.width + "px";
-      box.style.height = rect.height + "px";
+    if (!box) return;
+    if (!el) {
+      box.style.display = "none";
+      return;
     }
+
+    const rect = el.getBoundingClientRect();
+
+    box.style.left = rect.left + window.scrollX + "px";
+    box.style.top = rect.top + window.scrollY + "px";
+    box.style.width = rect.width + "px";
+    box.style.height = rect.height + "px";
+  }
 
   useEffect(() => {
     if (!isOpen) return;
@@ -225,10 +225,10 @@ export default function QuickStyle() {
           setClasses={setClasses}
         />
         <ElementDragger
-          updateBox={updateBox} 
+          updateBox={updateBox}
           selected={selected}
           hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef} 
+          selectBoxRef={selectBoxRef}
         />
         <button
           onClick={() => {
@@ -254,4 +254,3 @@ export default function QuickStyle() {
     );
   }
 }
-
