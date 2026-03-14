@@ -11,7 +11,7 @@ function App() {
     <>
       <div className="bg-green-400">
         Test Element
-        <div>
+        <div className="text-ellipsis text-yellow-400">
           Child Element
           <p className="text-red-500">Paragraph</p><p className="gap-y-64">Paragraph</p>
         </div>

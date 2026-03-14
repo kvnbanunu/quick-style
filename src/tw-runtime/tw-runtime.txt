@@ -1,5 +1,10 @@
-bg-red-400
-bg-blue-300
-bg-blue-300
-pb-10
-ml-10
+gap-36
+text-xl
+text-xl
+justify-items-start
+text-yellow-300
+justify-items-end
+text-9xl
+text-yellow-300
+text-ellipsis
+text-yellow-400
