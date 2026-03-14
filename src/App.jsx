@@ -2,7 +2,6 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import QuickStyle from "./components/QuickStyle";
 import { Example } from "./components/Example";
 
 function App() {
@@ -10,7 +9,15 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className="bg-red-500">
+        Test Element
+        <div>
+          Child Element
+          <p className="text-red-500">Paragraph</p><p>Paragraph</p>
+        </div>
+      </div>
+      <Example />
+      <div className="text-red-500">
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
@@ -30,8 +37,6 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <Example />
-      <QuickStyle />
     </>
   );
 }

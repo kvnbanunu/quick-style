@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import ElementTextEditor from "./elementTextEditor";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 
 export default function QuickStyle() {
@@ -46,6 +45,7 @@ export default function QuickStyle() {
   function selectElement(el) {
     if (!el) return;
 
+    // example for REESE
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(el);
     console.log(fileName);
     console.log(lineNumber);
@@ -209,4 +209,3 @@ export default function QuickStyle() {
     );
   }
 }
-
