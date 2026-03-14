@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import {isSelectableElement} from "../components/utils/filters.js"
 
 export default function ElementDragger({updateBox, selected, hoverBoxRef, selectBoxRef}) {
 
