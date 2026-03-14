@@ -9,15 +9,15 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className="bg-red-500">
         Test Element
         <div>
           Child Element
-          <p>Paragraph</p>
+          <p className="text-red-500">Paragraph</p><p>Paragraph</p>
         </div>
       </div>
       <Example />
-      <div>
+      <div className="text-red-500">
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
