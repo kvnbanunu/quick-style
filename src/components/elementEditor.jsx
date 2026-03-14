@@ -1,7 +1,8 @@
 export default function ElementEditor() {
 
   return (
-    <div>
+    <div class="bg-blue-700">
+      Class Editor
       <ClassInput/>
     </div>
   )
