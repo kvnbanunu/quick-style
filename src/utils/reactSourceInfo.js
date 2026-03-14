@@ -5,7 +5,7 @@ export function getReactSourceInfo(el) {
     el.closest("[data-qs-src]")?.getAttribute("data-qs-src");
 
   if (dataSrc) {
-    const [fileName, lineNumber, columnNumber] = dataSrc.split(":");
+    const [fileName, lineNumber, columnNumber] = dataSrc.split("#");
     return {
       fileName,
       lineNumber: parseInt(lineNumber),

@@ -3,6 +3,8 @@ import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
+import { getStorage, setStorage } from "./utils/localStorage";
+import { stringToHTMLElements } from "./utils/util";
 
 export default function QuickStyle() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,16 +14,61 @@ export default function QuickStyle() {
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
-  function turnOffHoverBox() {
-    if (hoverBoxRef.current) {
+
+
+  function turnOffQuickStyle() {
+    if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
+      selectBoxRef.current.style.display = "none";
+      console.log(selectBoxRef.current.style.display);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("contextmenu", onRightClick);
+      setIsOpen(false);
+      setStorage("isOpen", false);
     }
   }
 
-  function turnOnHoverBox() {
-    if (hoverBoxRef.current) {
+  function turnOnQuickStyle() {
+    if (hoverBoxRef.current && selectBoxRef.current) {
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("click", onClick, true);
+      document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
+      selectBoxRef.current.style.display = "block";
+      setIsOpen(true);
+      setStorage("isOpen", true);
     }
+  }
+
+  function onClick(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Always store the latest clicked element
+    setStorage("selected", e.target.outerHTML);
+    selectElement(e.target);
+  }
+
+  function onRightClick(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    e.preventDefault(); // optional: prevents the browser menu
+
+    setStorage("selected", null);
+    setSelected(null);
+    updateSelectBox(null);
+  }
+
+  function onMouseMove(e) {
+    const panel = document.getElementById("quickstyle-editor");
+    if (panel && panel.contains(e.target)) return;
+
+    updateBox(e.target, hoverBoxRef.current);
   }
 
   function updateSelectBox(el) {
@@ -33,7 +80,10 @@ export default function QuickStyle() {
       return;
     }
 
+    if (!document.body.contains(el)) return;
+
     const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return; // skip if size is zero
 
     box.style.display = "block";
     box.style.left = rect.left + window.scrollX + "px";
@@ -52,13 +102,10 @@ export default function QuickStyle() {
     console.log(columnNumber);
 
     setSelected(el);
-    setClasses(getElementClasses(el));
-    updateSelectBox(el);
-    el.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
   function getElementClasses(el) {
     if (!el) return [];
-    //console.log("Getting classes for", el, el.getAttribute("class"));
+    //.log("Getting classes for", el, el.getAttribute("class"));
     return (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
   }
   function updateBox(el, box) {
@@ -97,8 +144,22 @@ export default function QuickStyle() {
   }, [selected]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!selected || !(selected instanceof Element)) return;
 
+    setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    updateSelectBox(selected);
+    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return;
+  }, [selected]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelected(stringToHTMLElements(getStorage("selected")));
+      turnOnQuickStyle();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const hoverBox = document.createElement("div");
     const selectBox = document.createElement("div");
 
@@ -118,47 +179,16 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    function onRightClick(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
-
-      e.preventDefault(); // optional: prevents the browser menu
-
-      setSelected(null);
-      setClasses([]);
-      updateSelectBox(null);
-    }
-
-    function onMouseMove(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
-
-      updateBox(e.target, hoverBoxRef.current);
-    }
-
-    function onClick(e) {
-      const panel = document.getElementById("quickstyle-editor");
-      if (panel && panel.contains(e.target)) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      selectElement(e.target);
-    }
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("click", onClick, true);
-    document.addEventListener("contextmenu", onRightClick);
+    setIsOpen(getStorage("isOpen"));
 
     return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("click", onClick, true);
-      document.removeEventListener("contextmenu", onRightClick);
-
       hoverBox.remove();
       selectBox.remove();
     };
-  }, [isOpen]);
+  }, []);
+
+
+
 
   if (isOpen) {
     return (
@@ -186,8 +216,8 @@ export default function QuickStyle() {
         />
         <button
           onClick={() => {
-            turnOffHoverBox();
-            setIsOpen(false);
+            turnOffQuickStyle();
+
           }}
         >
           Close
@@ -199,8 +229,9 @@ export default function QuickStyle() {
       <button
         id="quickstyle-editor"
         onClick={() => {
-          turnOnHoverBox();
+          turnOnQuickStyle();
           setIsOpen(true);
+          setStorage("isOpen", true);
         }}
         className="fixed bottom-10 right-10 z-10"
       >

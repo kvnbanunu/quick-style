@@ -1,17 +1,41 @@
 import { useEffect, useRef } from "react";
 
-export default function ElementDragger({ updateBox, selected, hoverBoxRef, selectBoxRef }) {
-
+export default function ElementDragger({
+  updateBox,
+  selected,
+  hoverBoxRef,
+  selectBoxRef,
+}) {
   const draggingRef = useRef(false);
   const offsetRef = useRef({ x: 0, y: 0 });
 
-  useEffect(() => {
+  function ensureParentContains(el) {
+    const parent = el.parentElement;
+    if (!parent) return;
 
+    const parentRect = parent.getBoundingClientRect();
+    const childRect = el.getBoundingClientRect();
+
+    let newWidth = parentRect.width;
+    let newHeight = parentRect.height;
+
+    const overflowRight = childRect.right - parentRect.right;
+    const overflowBottom = childRect.bottom - parentRect.bottom;
+
+    if (overflowRight > 0) newWidth += overflowRight;
+    if (overflowBottom > 0) newHeight += overflowBottom;
+
+    if (overflowRight > 0 || overflowBottom > 0) {
+      parent.style.width = newWidth + "px";
+      parent.style.height = newHeight + "px";
+    }
+  }
+
+  useEffect(() => {
     function onMouseDown(e) {
       if (!selected) return;
       if (e.target !== selected) return;
       if (e.target.tagName === "BODY") return;
-
 
       draggingRef.current = true;
 
@@ -19,7 +43,7 @@ export default function ElementDragger({ updateBox, selected, hoverBoxRef, selec
 
       offsetRef.current = {
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        y: e.clientY - rect.top,
       };
       const parent = selected.parentElement;
       const isLayoutRoot =
@@ -99,6 +123,8 @@ export default function ElementDragger({ updateBox, selected, hoverBoxRef, selec
           selected.style.top = y + "px";
         }
 
+        ensureParentContains(selected);
+
         updateBox(selected, selectBoxRef.current);
         return;
       }
@@ -116,14 +142,11 @@ export default function ElementDragger({ updateBox, selected, hoverBoxRef, selec
 
     return () => {
       document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
     }
   }, [selected, updateBox, hoverBoxRef, selectBoxRef]);
 
-  return (
-    <div>
-
-    </div>
-  )
+  return <div></div>;
 }

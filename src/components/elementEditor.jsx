@@ -2,6 +2,9 @@ import tailwindClasses from "./tailwindClasses";
 import ClassPillList from "./ClassPillList";
 import TailwindClassInput from "./TailWindClassInput";
 import TailwindClassMenus from "./TailWindClassMenus";
+import { sendClass } from "../tw-runtime/tw-runtime";
+import { getReactSourceInfo } from "../utils/reactSourceInfo";
+
 export default function ClassEditor({ classes, selected, setClasses }) {
   function applyClasses(list) {
     if (!selected) return;
@@ -13,11 +16,40 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   function addClass(cls) {
     if (!cls) return;
     if (classes.includes(cls)) return;
-    applyClasses([...classes, cls]);
+
+    const newClasses = [...classes, cls];
+
+    applyClasses(newClasses);
+    sendClass(cls);
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+
+    saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
+  }
+
+  async function saveChanges(classesToSave, filePath, lineNum, column) {
+    await fetch("/api/update-element", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        classes: classesToSave,
+        filePath: filePath,
+        line_number: lineNum,
+        column_number: column,
+      })
+    })
+      .then(res => res.json())
+      .then(data => console.log("Backend response:", data))
+      .catch(console.error);
   }
 
   function removeClass(cls) {
-    applyClasses(classes.filter((c) => c !== cls));
+    const newClasses = classes.filter((c) => c !== cls);
+    applyClasses(newClasses);
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+
+    saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
   }
 
   function toggleClass(cls) {
