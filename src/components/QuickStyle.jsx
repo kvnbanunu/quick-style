@@ -11,28 +11,33 @@ export default function QuickStyle() {
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
 
-  const [temp, setTemp] = useState(null);
-
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
 
 
-  function turnOffHoverBox() {
-    if (hoverBoxRef.current) {
+  function turnOffQuickStyle() {
+    if (hoverBoxRef.current && selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
+      selectBoxRef.current.style.display = "none";
+      console.log(selectBoxRef.current.style.display);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("contextmenu", onRightClick);
+      setIsOpen(false);
+      setStorage("isOpen", false);
     }
   }
 
-  function turnOnHoverBox() {
-    if (hoverBoxRef.current) {
+  function turnOnQuickStyle() {
+    if (hoverBoxRef.current && selectBoxRef.current) {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
       document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
+      selectBoxRef.current.style.display = "block";
+      setIsOpen(true);
+      setStorage("isOpen", true);
     }
   }
 
@@ -100,7 +105,7 @@ export default function QuickStyle() {
   }
   function getElementClasses(el) {
     if (!el) return [];
-    //console.log("Getting classes for", el, el.getAttribute("class"));
+    //.log("Getting classes for", el, el.getAttribute("class"));
     return (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
   }
   function updateBox(el, box) {
@@ -139,15 +144,6 @@ export default function QuickStyle() {
   }, [selected]);
 
   useEffect(() => {
-    if (!temp) return;
-    if (typeof (temp) !== "string") return;
-    if (temp.includes("<")) {
-      setSelected(stringToHTMLElements(temp).root);
-    }
-    return;
-  }, [temp]);
-
-  useEffect(() => {
     if (!selected || !(selected instanceof Element)) return;
 
     setClasses((selected.getAttribute("class") || "").split(/\s+/).filter(Boolean));
@@ -155,6 +151,13 @@ export default function QuickStyle() {
     selected.scrollIntoView({ block: "nearest", inline: "nearest" });
     return;
   }, [selected]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelected(stringToHTMLElements(getStorage("selected")));
+      turnOnQuickStyle();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const hoverBox = document.createElement("div");
@@ -177,14 +180,6 @@ export default function QuickStyle() {
     selectBoxRef.current = selectBox;
 
     setIsOpen(getStorage("isOpen"));
-    if (isOpen) {
-      turnOnHoverBox();
-
-    }
-    setSelected(stringToHTMLElements(getStorage("selected")));
-
-    turnOnHoverBox();
-
 
     return () => {
       hoverBox.remove();
@@ -221,9 +216,8 @@ export default function QuickStyle() {
         />
         <button
           onClick={() => {
-            turnOffHoverBox();
-            setIsOpen(false);
-            setStorage("isOpen", isOpen);
+            turnOffQuickStyle();
+
           }}
         >
           Close
@@ -235,9 +229,9 @@ export default function QuickStyle() {
       <button
         id="quickstyle-editor"
         onClick={() => {
-          turnOnHoverBox();
+          turnOnQuickStyle();
           setIsOpen(true);
-          setStorage("isOpen", isOpen);
+          setStorage("isOpen", true);
         }}
         className="absolute bottom-10 right-10 z-10"
       >

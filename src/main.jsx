@@ -20,9 +20,11 @@ createRoot(document.getElementById("root")).render(
             Paragraph
           </p>
 
-          <button className="rounded-md bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700">
-            Test Button
-          </button>
+          <a href="https://www.google.com" target="_blank" rel="noopener noreferrer">
+            <button className="rounded-md bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700">
+              Test Button
+            </button>
+          </a>
         </div>
       </div>
     </div>
