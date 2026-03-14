@@ -46,11 +46,15 @@ export default function QuickStyle() {
     if (!el) return;
 
     setSelected(el);
-    setClasses((el.getAttribute("class") || "").split(/\s+/).filter(Boolean));
+    setClasses(getElementClasses(el));
     updateSelectBox(el);
     el.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
-
+  function getElementClasses(el) {
+    if (!el) return [];
+    //console.log("Getting classes for", el, el.getAttribute("class"));
+    return (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
+  }
   function updateBox(el, box) {
     if (!box) return;
     if (!el) {
@@ -65,6 +69,26 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
+  //applies selected element classes to the quickstyle box for viewing 
+  useEffect(() => {
+    if (!selected) return;
+
+    const syncClasses = () => {
+      setClasses(getElementClasses(selected));
+    };
+
+    syncClasses();
+    const observer = new MutationObserver((mutations) => {
+      const changedClass = mutations.some(
+        (m) => m.type === "attributes" && m.attributeName === "class"
+      );
+      if (changedClass) syncClasses();
+    });
+
+    observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, [selected]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -96,6 +120,7 @@ export default function QuickStyle() {
       e.preventDefault(); // optional: prevents the browser menu
 
       setSelected(null);
+      setClasses([]);
       updateSelectBox(null);
     }
 

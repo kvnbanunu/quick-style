@@ -14,6 +14,7 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
   function addClass(cls) {
     if (!cls) return;
+    if (classes.includes(cls)) return;
     applyClasses([...classes, cls])
   }
 
@@ -75,7 +76,6 @@ function ClassInput({ addClass }) {
   function getSuggestions(input) {
     if (!input.trim()) return [];
 
-    // Support variant prefixes like "hover:", "md:", "dark:hover:", etc.
     const colonIdx = input.lastIndexOf(":");
     const prefix = colonIdx >= 0 ? input.slice(0, colonIdx + 1) : "";
     const query = colonIdx >= 0 ? input.slice(colonIdx + 1) : input;
@@ -84,7 +84,6 @@ function ClassInput({ addClass }) {
 
     const lower = query.toLowerCase();
 
-    // Prioritise classes that start with the query, then fall back to contains.
     const starts = tailwindClasses.filter((c) => c.startsWith(lower));
     const contains = tailwindClasses.filter(
       (c) => !c.startsWith(lower) && c.includes(lower)
