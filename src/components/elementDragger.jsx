@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import {isSelectableElement} from "../components/utils/filters.js"
 
 export default function ElementDragger({updateBox, selected, hoverBoxRef, selectBoxRef}) {
 
@@ -10,6 +11,8 @@ export default function ElementDragger({updateBox, selected, hoverBoxRef, select
     function onMouseDown(e) {
       if (!selected) return;
       if (e.target !== selected) return;
+      if(e.target.tagName === "BODY") return;
+
 
       draggingRef.current = true;
 
