@@ -52,7 +52,7 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     if (!sourceInfo) return;
     const { fileName, lineNumber, columnNumber } = sourceInfo;
 
-    const key = selected.dataset.qsSrc;
+    const key = target.dataset.qsSrc;
     storeChange("quick-style-changes", key, "changeClass", {
       classes: newClasses,
       filePath: fileName,
@@ -74,7 +74,7 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     if (!sourceInfo) return;
     const { fileName, lineNumber, columnNumber } = sourceInfo;
 
-    const key = selected.dataset.qsSrc;
+    const key = target.dataset.qsSrc;
     storeChange("quick-style-changes", key, "changeClass", {
       classes: newClasses,
       filePath: fileName,

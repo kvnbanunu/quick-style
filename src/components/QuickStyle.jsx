@@ -8,7 +8,6 @@ import {
   getStorage,
   setStorage,
 } from "./utils/sessionStorage";
-import { stringToHTMLElements } from "./utils/util";
 import TextEditor, { getNodeByPath } from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
 import { saveAll } from "./utils/saveChanges";
@@ -270,7 +269,7 @@ export default function QuickStyle() {
   useEffect(() => {
     if (!init) return;
     applyTempEdits();
-  }, [edits]);
+  }, [edits, init]);
 
   useEffect(() => {
     let rafId = 0;
@@ -293,25 +292,82 @@ export default function QuickStyle() {
     };
   }, []);
 
-  function applyTempEdits() {
-    if (edits.size === 0) return;
+  function applyTempEdits(editMap = edits) {
+    if (editMap.size === 0) return;
 
-    for (const [key, val] of edits) {
-      const el = document.querySelector(`[data-qs-src="${key}"]`);
+    for (const [key, val] of editMap) {
+      const el = findElementByQSSrc(key);
       if (el) {
-        const thisEl = stringToHTMLElements(el.outerHTML);
-        if (val.editClass !== null) {
-          thisEl.setAttribute("class", val.editClass.join(" "));
+        // Support both current shape ({ editClass, editText }) and legacy
+        // shape where the map value was just an array of classes.
+        const classEdit = Array.isArray(val?.editClass)
+          ? val.editClass
+          : Array.isArray(val)
+            ? val
+            : null;
+
+        if (classEdit) {
+          const nextClass = classEdit.join(" ").trim();
+          if ((el.getAttribute("class") || "").trim() !== nextClass) {
+            el.setAttribute("class", nextClass);
+          }
         }
-        if (val.editText !== null) {
-          const liveNode = getNodeByPath(thisEl, val.editText.path);
+
+        const textEdit = val && !Array.isArray(val) ? val.editText : null;
+        if (textEdit && Array.isArray(textEdit.path)) {
+          const liveNode = getNodeByPath(el, textEdit.path);
           if (liveNode && liveNode.nodeType === Node.TEXT_NODE) {
-            liveNode.textContent = val.editText.value;
+            if (liveNode.textContent !== textEdit.value) {
+              liveNode.textContent = textEdit.value;
+            }
           }
         }
       }
     }
   }
+
+  useEffect(() => {
+    if (!init || !isOpen) return;
+
+    let rafId = 0;
+
+    const reapplyEdits = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const latest = getMapFromStorage("quick-style-edits");
+        if (latest.size > 0) {
+          applyTempEdits(latest);
+          setEdits(latest);
+        }
+      });
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      const shouldReapply = mutations.some(
+        (m) =>
+          m.type === "attributes" ||
+          m.type === "childList" ||
+          m.type === "characterData",
+      );
+
+      if (shouldReapply) {
+        reapplyEdits();
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => {
+      observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [init, isOpen]);
 
   useEffect(() => {
     if (!selected) return;
@@ -324,6 +380,20 @@ export default function QuickStyle() {
       setSelected(liveSelected);
     }
   }, [selected, classes, innerText]);
+
+  useEffect(() => {
+    if (!selected) return;
+
+    const key = selected.getAttribute("data-qs-src");
+    if (!key) return;
+
+    if (!selected.isConnected || !document.body.contains(selected)) {
+      const liveSelected = findElementByQSSrc(key);
+      if (liveSelected) {
+        setSelected(liveSelected);
+      }
+    }
+  }, [selected]);
 
   if (isOpen) {
     return (
