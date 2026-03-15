@@ -74,7 +74,7 @@ export default function TextEditor({ selected, setInnerText, setSelected }) {
       setInnerText(selected.innerHTML);
 
       const key = selected.dataset.qsSrc;
-      storeEdit("quick-style-edits", key, "editText", {
+      storeEdit(key, "editText", {
         path: path,
         innerHTML: selected.innerHTML,
         value: value,
@@ -83,7 +83,7 @@ export default function TextEditor({ selected, setInnerText, setSelected }) {
       const copy = selected.cloneNode(true);
       removeQSSrcAttribute(copy);
       const src = getReactSourceInfo(selected);
-      storeChange("quick-style-changes", key, "changeFull", {
+      storeChange(key, "changeFull", {
         elementString: copy.outerHTML,
         filePath: src.fileName,
         line_number: src.lineNumber,
@@ -129,7 +129,22 @@ export default function TextEditor({ selected, setInnerText, setSelected }) {
     }
 
     setInnerText(parent.innerHTML);
-    await persistElement(selected, selected);
+    // await persistElement(selected, selected);
+
+    storeEdit(parent.dataset.qsSrc, "addChild", {
+      inner: parent.innerHTML,
+    });
+
+    const copy = parent.cloneNode(true);
+    removeQSSrcAttribute(copy);
+    const src = getReactSourceInfo(parent);
+
+    storeChange(parent.dataset.qsSrc, "changeFull", {
+      elementString: copy.outerHTML,
+      filePath: src.fileName,
+      line_number: src.lineNumber,
+      column_number: src.columnNumber + 1,
+    });
 
     setSelected(child);
   }

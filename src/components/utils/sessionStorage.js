@@ -33,8 +33,8 @@ export function getMapFromStorage(key) {
   return new Map();
 }
 
-export function storeEdit(session, key, type, obj) {
-  const store = getMapFromStorage(session);
+export function storeEdit(key, type, obj) {
+  const store = getMapFromStorage("quick-style-edits");
   if (store.size > 0) {
     if (store.has(key)) {
       const curr = store.get(key);
@@ -52,11 +52,11 @@ export function storeEdit(session, key, type, obj) {
     store.set(key, temp);
   }
   const storeStr = JSON.stringify([...store]);
-  setStorage(session, storeStr);
+  setStorage("quick-style-edits", storeStr);
 }
 
-export function storeChange(session, key, type, obj) {
-  const store = getMapFromStorage(session);
+export function storeChange(key, type, obj) {
+  const store = getMapFromStorage("quick-style-changes");
   if (store.size > 0) {
     if (store.has(key)) {
       const curr = store.get(key);
@@ -75,5 +75,5 @@ export function storeChange(session, key, type, obj) {
   }
 
   const storeStr = JSON.stringify([...store]);
-  setStorage(session, storeStr);
+  setStorage("quick-style-changes", storeStr);
 }

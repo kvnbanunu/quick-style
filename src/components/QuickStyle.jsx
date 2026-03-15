@@ -311,6 +311,9 @@ export default function QuickStyle() {
             liveNode.textContent = val.editText.value;
           }
         }
+        if (val.addChild !== null) {
+          thisEl.innerHTML = val.addChild.inner;
+        }
       }
     }
   }
