@@ -8,7 +8,9 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
   async function saveText() {
     if (!selected) return;
 
-    selected.innerHTML = innerText || "";
+    const formattedHtml = (innerText || "").replace(/>/g, ">\n");
+    selected.innerHTML = formattedHtml;
+    console.log("Updated element HTML:", selected.outerHTML);
     setStorage("quick-style-selected", selected.outerHTML);
 
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);

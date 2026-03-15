@@ -21,7 +21,7 @@ export default function QuickStyle() {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
 
-      // document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
       // setIsOpen(false);
@@ -31,7 +31,7 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      // document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
