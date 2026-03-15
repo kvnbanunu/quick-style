@@ -6,8 +6,13 @@ import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import { setStorage } from "./utils/localStorage";
 
-export default function ClassEditor({ classes, selected, oldSelected, setClasses, setSelected }) {
-
+export default function ClassEditor({
+  classes,
+  selected,
+  oldSelected,
+  setClasses,
+  setSelected,
+}) {
   function applyClasses(list) {
     if (!selected) return;
 
@@ -22,15 +27,15 @@ export default function ClassEditor({ classes, selected, oldSelected, setClasses
     const newClasses = [...classes, cls];
 
     applyClasses(newClasses);
-    
+
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
-    
-    saveChanges(newClasses, fileName, lineNumber, columnNumber+1);
+
+    saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
     sendClass(cls);
   }
 
   async function saveChanges(classesToSave, filePath, lineNum, column) {
-    setStorage("selected", selected.outerHTML);
+    setStorage("quick-style-selected", selected.dataset.qsSrc);
     await fetch("/api/update-element", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,10 +44,10 @@ export default function ClassEditor({ classes, selected, oldSelected, setClasses
         filePath: filePath,
         line_number: lineNum,
         column_number: column,
-      })
+      }),
     })
-      .then(res => res.json())
-      .then(data => console.log("Backend response:", data))
+      .then((res) => res.json())
+      .then((data) => console.log("Backend response:", data))
       .catch(console.error);
   }
 
@@ -70,9 +75,13 @@ export default function ClassEditor({ classes, selected, oldSelected, setClasses
   return (
     <div className="bg-blue-700 flex-1 min-h-0 overflow-y-auto p-2">
       Class Editor
-      <TailwindClassMenus selectedClasses={classes} onToggleClass={toggleClass} />
+      <TailwindClassMenus
+        selectedClasses={classes}
+        onToggleClass={toggleClass}
+      />
       <TailwindClassInput allClasses={tailwindClasses} onAddClass={addClass} />
       <ClassPillList classes={classes} onRemoveClass={removeClass} />
     </div>
   );
 }
+

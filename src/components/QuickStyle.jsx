@@ -6,7 +6,7 @@ import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 
 export default function QuickStyle() {
-  const [isOpenInit, setIsOpenInit] = useState(null);
+  const [init, setInit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
@@ -22,7 +22,6 @@ export default function QuickStyle() {
       // document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
-      // setIsOpen(false);
       setStorage("quick-style-isOpen", false);
     }
   }
@@ -34,7 +33,6 @@ export default function QuickStyle() {
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
-      // setIsOpen(true);
       setStorage("quick-style-isOpen", true);
     }
   }
@@ -49,7 +47,7 @@ export default function QuickStyle() {
     e.stopPropagation();
 
     // Always store the latest clicked element
-    setStorage("quick-style-selected", e.target.outerHTML);
+    setStorage("quick-style-selected", e.target.dataset.qsSrc);
     selectElement(e.target);
   }
 
@@ -101,6 +99,7 @@ export default function QuickStyle() {
 
     setSelected(el);
   }
+
   function getElementClasses(el) {
     if (!el) return [];
     //.log("Getting classes for", el, el.getAttribute("class"));
@@ -123,8 +122,8 @@ export default function QuickStyle() {
 
   //applies selected element classes to the quickstyle box for viewing
   useEffect(() => {
-    if (!selected) return;
-    console.log(selected);
+    if (!init) return;
+    if (selected === null) return;
     updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
@@ -147,20 +146,19 @@ export default function QuickStyle() {
   }, [selected]);
 
   useEffect(() => {
-    if (!selected || !(selected instanceof Element)) return;
+    if (!init) return;
+    if (selected === null) return;
 
     setClasses(
       (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
     );
     updateSelectBox(selected);
     selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-    return;
   }, [selected]);
 
   useEffect(() => {
-    if (isOpenInit === null) return;
+    if (!init) return;
     if (isOpen === true || isOpen === "true") {
-      setSelected(stringToHTMLElements(getStorage("quick-style-selected")));
       turnOnQuickStyle();
     } else {
       turnOffQuickStyle();
@@ -187,9 +185,23 @@ export default function QuickStyle() {
     hoverBoxRef.current = hoverBox;
     selectBoxRef.current = selectBox;
 
-    const isOpenKey = getStorage("quick-style-isOpen");
-    setIsOpenInit(true);
-    setIsOpen(isOpenKey === true || isOpenKey === "true");
+    const isOpenStore = getStorage("quick-style-isOpen");
+    const isOpenVal = isOpenStore === true || isOpenStore === "true";
+    let selectedStore = null;
+
+    if (isOpenVal) {
+      selectedStore = getStorage("quick-style-selected");
+    }
+
+    setInit(true);
+
+    setIsOpen(isOpenVal);
+    if (selectedStore !== null) {
+      const selectedStr = `[data-qs-src="${selectedStore}"]`;
+      setSelected(
+        stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
+      );
+    }
 
     return () => {
       hoverBox.remove();
