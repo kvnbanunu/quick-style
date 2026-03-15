@@ -13,7 +13,7 @@ function App() {
         Test Element
         <div className="text-ellipsis text-yellow-400 bg-red-400">
           Child Element
-          <p className="">Paragraph</p><p className="gap-y-64">Paragraph</p>
+          <p className="justify-end">Paragraph</p><p className="gap-y-64">Paragraph</p>
         </div>
       </div>
       <Example />
@@ -30,7 +30,7 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
-        <p>
+        <p className="text-yellow-100">
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>

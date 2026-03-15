@@ -3,9 +3,24 @@ import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import ButtonEditor from "./ButtonEditor";
 import AttributeEditor from "./AttributeEditor";
 
+const CHILD_ELEMENT_OPTIONS = [
+  "div",
+  "p",
+  "span",
+  "button",
+  "section",
+  "article",
+  "ul",
+  "li",
+  "a",
+];
+
+const VOID_TAGS = new Set(["img", "input", "br", "hr", "meta", "link"]);
+
 export default function TextEditor({ selected, innerText, setInnerText }) {
   const [href, setHref] = useState("");
   const [textNodes, setTextNodes] = useState([]);
+  const [newChildTag, setNewChildTag] = useState("div");
 
   function getNodePath(node, ancestor) {
     const path = [];
@@ -90,6 +105,30 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
     Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
   }
 
+  async function persistElement(sourceElement, elementToSave) {
+    const copy = elementToSave.cloneNode(true);
+    removeQSSrcAttribute(copy);
+
+    const sourceInfo = getReactSourceInfo(sourceElement);
+    if (!sourceInfo) return;
+
+    const { fileName, lineNumber, columnNumber } = sourceInfo;
+
+    await fetch("/api/update-full-element", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        elementString: copy.outerHTML,
+        filePath: fileName,
+        line_number: lineNumber,
+        column_number: columnNumber + 1,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("Backend response:", data))
+      .catch(console.error);
+  }
+
   async function saveText() {
     if (!selected) return;
 
@@ -100,7 +139,7 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
 
     const shouldSaveHrefOwner = hrefOwner && hrefOwner !== selected;
 
-    let elementToSave;
+    let elementToSave = selected;
     let sourceElement = selected;
 
     if (shouldSaveHrefOwner) {
@@ -126,27 +165,33 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
       elementToSave = copy;
     }
 
-    removeQSSrcAttribute(elementToSave);
-    console.log("Updated element HTML:", elementToSave.outerHTML);
-    console.log(selected);
+    await persistElement(sourceElement, elementToSave);
+  }
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(sourceElement);
+  async function createChildElement() {
+    if (!selected) return;
 
-    console.log("Source info:", { fileName, lineNumber, columnNumber });
+    const child = document.createElement(newChildTag);
 
-    await fetch("/api/update-full-element", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        elementString: elementToSave.outerHTML,
-        filePath: fileName,
-        line_number: lineNumber,
-        column_number: columnNumber + 1,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Backend response:", data))
-      .catch(console.error);
+    child.className = "bg-white border border-black text-black p-2";
+
+    if (newChildTag === "a") {
+      child.setAttribute("href", "#");
+    }
+
+    if (newChildTag === "img") {
+      child.setAttribute("alt", "New image");
+      child.setAttribute("src", "https://via.placeholder.com/120x80?text=Image");
+      child.className = "bg-white border border-black";
+    } else if (!VOID_TAGS.has(newChildTag)) {
+      child.textContent = `New ${newChildTag}`;
+    }
+
+    selected.appendChild(child);
+    setInnerText(selected.innerHTML);
+    setTextNodes(collectEditableTextNodes(selected));
+
+    await persistElement(selected, selected);
   }
 
   useEffect(() => {
@@ -158,40 +203,57 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
     setTextNodes(collectEditableTextNodes(selected));
   }, [selected]);
 
-
-  if(!selected) {
-    return (<div></div>);
-  } else {
-    return (
-      <div className="bg-blue-700 flex-1 p-2">
-        Text Editor
-        <div>
-          {textNodes.length === 0 ? (
-            <p className="text-sm">No editable text nodes found in this element.</p>
-          ) : (
-            textNodes.map((node, index) => (
-              <div key={node.id} className="mb-2">
-                <div className="text-xs opacity-80">Text node {index + 1} in {node.label}</div>
-                <textarea
-                  placeholder="Edit text..."
-                  value={node.value}
-                  onChange={(e) => handleTextNodeChange(node.path, e.target.value)}
-                  rows={2}
-                  className="w-full min-h-12 max-h-36 resize-y overflow-y-auto align-top bg-blue-500 rounded-2xl pl-2 leading-6"
-                />
-              </div>
-            ))
-          )}
-        
-          <ButtonEditor 
-            selected={selected} 
-            href={href}
-            setHref={setHref}
-          />
-          <br/>
-          <button onClick={saveText}>Save</button>
-        </div>
-      </div>
-    )
+  if (!selected) {
+    return <div></div>;
   }
+
+  return (
+    <div className="bg-blue-700 flex-1">
+      Text Editor
+      <div>
+        {textNodes.length === 0 ? (
+          <p className="text-sm">No editable text nodes found in this element.</p>
+        ) : (
+          textNodes.map((node, index) => (
+            <div key={node.id} className="mb-2">
+              <div className="text-xs opacity-80">
+                Text node {index + 1} in {node.label}
+              </div>
+              <textarea
+                placeholder="Edit text..."
+                value={node.value}
+                onChange={(e) => handleTextNodeChange(node.path, e.target.value)}
+                rows={2}
+                className="w-full min-h-12 max-h-36 resize-y overflow-y-auto align-top bg-blue-500 rounded-2xl pl-2 leading-6"
+              />
+            </div>
+          ))
+        )}
+
+        <div className="mt-2 flex items-center gap-2">
+          <select
+            value={newChildTag}
+            onChange={(e) => setNewChildTag(e.target.value)}
+            className="rounded border border-slate-400 bg-black px-2 py-1 text-white"
+          >
+            {CHILD_ELEMENT_OPTIONS.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={createChildElement}
+            className="rounded border border-slate-400 bg-black px-3 py-1 text-white"
+          >
+            Create Child
+          </button>
+        </div>
+
+        <ButtonEditor selected={selected} href={href} setHref={setHref} />
+        <button onClick={saveText}>Save</button>
+      </div>
+    </div>
+  );
 }

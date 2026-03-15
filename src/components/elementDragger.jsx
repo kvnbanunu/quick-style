@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import * as utils from "./utils/helpers.js";
 
 export default function ElementDragger({
   updateBox,
@@ -8,45 +9,6 @@ export default function ElementDragger({
 }) {
   const draggingRef = useRef(false);
   const offsetRef = useRef({ x: 0, y: 0 });
-
-  function canUseParentContainer(el) {
-    const parent = el?.parentElement;
-    if (!(parent instanceof HTMLElement)) return false;
-
-    const isLayoutRoot =
-      parent === document.body ||
-      parent === document.documentElement ||
-      parent.id === "root";
-
-    if (isLayoutRoot) return false;
-
-    const parentStyle = window.getComputedStyle(parent);
-    return parentStyle.display !== "inline" && parentStyle.display !== "contents";
-  }
-
-  function ensureParentContains(el) {
-    if (!canUseParentContainer(el)) return;
-
-    const parent = el.parentElement;
-    if (!(parent instanceof HTMLElement)) return;
-
-    const parentRect = parent.getBoundingClientRect();
-    const childRect = el.getBoundingClientRect();
-
-    let newWidth = parentRect.width;
-    let newHeight = parentRect.height;
-
-    const overflowRight = childRect.right - parentRect.right;
-    const overflowBottom = childRect.bottom - parentRect.bottom;
-
-    if (overflowRight > 0) newWidth += overflowRight;
-    if (overflowBottom > 0) newHeight += overflowBottom;
-
-    if (overflowRight > 0 || overflowBottom > 0) {
-      parent.style.width = Math.ceil(newWidth) + "px";
-      parent.style.height = Math.ceil(newHeight) + "px";
-    }
-  }
 
   useEffect(() => {
     function onMouseDown(e) {
@@ -64,7 +26,7 @@ export default function ElementDragger({
 
       const parent = selected.parentElement;
 
-      if (canUseParentContainer(selected) && parent instanceof HTMLElement) {
+      if (utils.canUseParentContainer(selected) && parent instanceof HTMLElement) {
         const parentStyle = window.getComputedStyle(parent);
         const parentRect = parent.getBoundingClientRect();
 
@@ -74,9 +36,11 @@ export default function ElementDragger({
 
         const selectedStyle = window.getComputedStyle(selected);
         if (selectedStyle.position === "static") {
-          selected.style.width = rect.width + "px";
-          selected.style.height = rect.height + "px";
-          selected.style.margin = "0";
+          if (utils.shouldLockDimensions(selected)) {
+            selected.style.width = rect.width + "px";
+            selected.style.height = rect.height + "px";
+            selected.style.margin = "0";
+          }
         }
 
         selected.style.position = "absolute";
@@ -85,9 +49,11 @@ export default function ElementDragger({
       } else {
         const selectedStyle = window.getComputedStyle(selected);
         if (selectedStyle.position === "static") {
-          selected.style.width = rect.width + "px";
-          selected.style.height = rect.height + "px";
-          selected.style.margin = "0";
+          if (utils.shouldLockDimensions(selected)) {
+            selected.style.width = rect.width + "px";
+            selected.style.height = rect.height + "px";
+            selected.style.margin = "0";
+          }
         }
 
         selected.style.position = "absolute";
@@ -103,7 +69,7 @@ export default function ElementDragger({
       if (draggingRef.current && selected) {
         const parent = selected.parentElement;
 
-        if (canUseParentContainer(selected) && parent instanceof HTMLElement) {
+        if (utils.canUseParentContainer(selected) && parent instanceof HTMLElement) {
           const parentRect = parent.getBoundingClientRect();
 
           let x = e.clientX - parentRect.left - offsetRef.current.x + parent.scrollLeft;
@@ -132,7 +98,7 @@ export default function ElementDragger({
           selected.style.top = y + "px";
         }
 
-        ensureParentContains(selected);
+        utils.ensureParentContains(selected);
         updateBox(selected, selectBoxRef.current);
         return;
       }
