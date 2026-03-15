@@ -1,3 +1,5 @@
+import DeleteButton from "./DeleteElementButton";
+
 export default function ElementTraverser({ selected, selectElement, hoverBoxRef, selectBoxRef }) {
   function getSelectableElements() {
     const panel = document.getElementById("quickstyle-editor");
@@ -79,6 +81,9 @@ export default function ElementTraverser({ selected, selectElement, hoverBoxRef,
       <button type="button" onClick={() => cycleSelection(1)}>
         Next element
       </button>
+      <DeleteButton
+          selected={selected}
+        />
     </div>
   );
 }
