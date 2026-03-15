@@ -1,21 +1,16 @@
 {
   "name": "quick-style-hackathon",
-  "version": "1.0.0",
+  "version": "1.0.12",
   "type": "module",
-  "main": "./dist/index.umd.cjs",
-  "module": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
-    },
-    "./style.css": "./dist/quick-style.css",
-    "./utils/babel-plugin-source": "./src/utils/babel-plugin-source.js",
-    "./api": "./src/utils/codeUpdaterEndpoint.js"
+    ".": "./dist/index.js",
+    "./babel-plugin": "./src/utils/babel-plugin-source.js",
+    "./style.css": "./dist/index.css" 
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc",

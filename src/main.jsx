@@ -7,15 +7,15 @@ import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QuickStyle />
-    <button className="rounded-md px-4 py-2">Tesdacdasccsas</button>
+    <button className="rounded-md px-4 py-2 text-zinc-400 text-5xl">Tesdacdasccsas</button>
     <div className="text-ellipsis bg-red-400">
       Poo Element
       <p className="">Paragraph</p>
-      <p className="gap-y-64">Paragraph</p>
+      <p className="gap-y-64 text-orange-400">Paragraph</p>
     </div>
     <div className="min-h-screen bg-slate-100 p-8">
       <div className="mx-auto max-w-xl rounded-xl border border-slate-300 p-6 shadow-lg gap-8">
-        <h1 className="mb-4 text-2xl font-bold text-gray-700">Test Element</h1>
+        <h1 className="mb-4 text-2xl font-bold text-neutral-300">Test Element</h1>
 
         {/* <button
        onClick={() => {
@@ -43,7 +43,7 @@ createRoot(document.getElementById("root")).render(
      </button> */}
 
         <div className="space-y-3 rounded-lg bg-slate-50 p-4 bg-red-600">
-          <div className="rounded-md px-3 py-2 bg-purple-600">
+          <div className="rounded-md px-3 py-2">
             Child Element
           </div>
 

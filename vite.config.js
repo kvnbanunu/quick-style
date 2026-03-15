@@ -20,14 +20,9 @@ export default defineConfig({
     tailwindcss(),
     tailwindRuntime(),
     {
-      name: "quick-style-api",
+      name: "quick-style-server-endpoints",
       configureServer(server) {
         codeUpdaterEndpoint(server);
-      }
-    },
-    {
-      name: "quick-style-api",
-      configureServer(server) {
         elementUpdater(server);
       }
     },
@@ -37,10 +32,18 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.js'),
       name: 'QuickStyle',
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'umd.cjs'}`,
+      fileName: 'index',
+      formats: ['es'] 
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
+      external: [
+        'react', 
+        'react-dom', 
+        'react/jsx-runtime', 
+        'fs', 
+        'path', 
+        'url'
+      ],
       output: {
         globals: {
           react: 'React',
