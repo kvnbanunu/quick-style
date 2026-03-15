@@ -5,14 +5,27 @@ export default function AttributeEditor({ selected }) {
   const [attributeName, setAttributeName] = useState("");
   const [attributeValue, setAttributeValue] = useState("");
 
-  async function saveAttribute() {
-    const trimmedName = attributeName.trim();
-    if (!selected || !trimmedName) return;
+  const filteredAttributes = selected
+    ? Array.from(selected.attributes).filter(
+      (attribute) =>
+        !["class", "className", "href", "data-qs-src", "data-qc-src"].includes(
+          attribute.name,
+        ),
+    )
+    : [];
 
-    let copy = selected.cloneNode(true);
-    copy.setAttribute(trimmedName, attributeValue);
+  function removeQSSrcAttribute(el) {
+    if (!el) return;
+    el.removeAttribute("data-qs-src");
+    el.removeAttribute("style");
+    Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
+  }
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected) || {};
+  async function persistElement(element) {
+    const copy = element.cloneNode(true);
+    removeQSSrcAttribute(copy);
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(element) || {};
 
     await fetch("/api/update-full-element", {
       method: "POST",
@@ -27,6 +40,21 @@ export default function AttributeEditor({ selected }) {
       .then((res) => res.json())
       .then((data) => console.log("Backend response:", data))
       .catch(console.error);
+  }
+
+  async function saveAttribute() {
+    const trimmedName = attributeName.trim();
+    if (!selected || !trimmedName) return;
+
+    selected.setAttribute(trimmedName, attributeValue);
+    await persistElement(selected);
+  }
+
+  async function removeAttribute(attributeNameToRemove) {
+    if (!selected) return;
+
+    selected.removeAttribute(attributeNameToRemove);
+    await persistElement(selected);
   }
 
   if (!selected) {
@@ -58,6 +86,27 @@ export default function AttributeEditor({ selected }) {
         >
           Save
         </button>
+      </div>
+      <div className="mt-4 space-y-2">
+        <p>Current Attributes</p>
+        {filteredAttributes.length === 0 ? (
+          <p className="text-sm">No extra attributes on this element.</p>
+        ) : (
+          filteredAttributes.map((attribute) => (
+            <div
+              key={attribute.name}
+              className="bg-blue-500 rounded-2xl px-3 py-2 text-sm flex items-center justify-between gap-2"
+            >
+              <span>{attribute.name}: {attribute.value}</span>
+              <button
+                onClick={() => removeAttribute(attribute.name)}
+                className="px-2 py-1 bg-blue-700 rounded-xl"
+              >
+                Remove
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
