@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tailwindRuntime from "./src/tw-runtime/tw-runtime";
 import { codeUpdaterEndpoint } from "./src/utils/codeUpdaterEndpoint.js";
+import { elementUpdater } from "./src/utils/elementUpdater.js";
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
@@ -22,6 +23,12 @@ export default defineConfig({
       name: "quick-style-api",
       configureServer(server) {
         codeUpdaterEndpoint(server);
+      }
+    },
+    {
+      name: "quick-style-api",
+      configureServer(server) {
+        elementUpdater(server);
       }
     },
   ],
