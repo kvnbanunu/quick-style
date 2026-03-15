@@ -8,8 +8,9 @@ import {
   setStorage,
 } from "./utils/sessionStorage";
 import { stringToHTMLElements } from "./utils/util";
-import TextEditor from "./TextEditor";
+import TextEditor, { getNodeByPath } from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
+import { saveAll } from "./utils/saveChanges";
 
 export default function QuickStyle() {
   const [init, setInit] = useState(false);
@@ -118,7 +119,6 @@ export default function QuickStyle() {
 
   function getElementClasses(el) {
     if (!el) return [];
-    //.log("Getting classes for", el, el.getAttribute("class"));
     return (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
   }
   function updateBox(el, box) {
@@ -247,6 +247,12 @@ export default function QuickStyle() {
         if (val.editClass !== null) {
           thisEl.setAttribute("class", val.editClass.join(" "));
         }
+        if (val.editText !== null) {
+          const liveNode = getNodeByPath(thisEl, val.editText.path);
+          if (liveNode && liveNode.nodeType === Node.TEXT_NODE) {
+            liveNode.textContent = val.editText.value;
+          }
+        }
       }
     }
   }
@@ -283,7 +289,6 @@ export default function QuickStyle() {
           <br />
           <TextEditor
             selected={selected}
-            innerText={innerText}
             setInnerText={setInnerText}
             setSelected={setSelected}
           />
@@ -296,13 +301,17 @@ export default function QuickStyle() {
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
         /> */}
-        <button
-          onClick={() => {
-            setIsOpen(false);
-          }}
-        >
-          Close
-        </button>
+        <div className="flex justify-around">
+          <button onClick={saveAll}>Save</button>
+
+          <button
+            onClick={() => {
+              setIsOpen(false);
+            }}
+          >
+            Close
+          </button>
+        </div>
       </div>
     );
   } else {
