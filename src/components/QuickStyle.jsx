@@ -539,7 +539,14 @@ export default function QuickStyle() {
 
         {/* Footer */}
         <div className="flex justify-around shrink-0 border-t border-zinc-700/60">
-          <button onClick={saveAll}>Save</button>
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              saveAll();
+            }}
+          >
+            Save
+          </button>
           <button
             type="button"
             onClick={() => setIsOpen(false)}

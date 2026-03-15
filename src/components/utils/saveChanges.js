@@ -1,4 +1,4 @@
-import { getMapFromStorage, removeStorage } from "./sessionStorage";
+import { getMapFromStorage, removeStorage, setStorage } from "./sessionStorage";
 
 export async function saveChanges(endpoint, obj) {
   await fetch(endpoint, {
@@ -24,7 +24,7 @@ export async function saveAll() {
     }
   }
 
-  removeStorage("quick-style-isOpen");
+  setStorage("quick-style-isOpen", "false");
   removeStorage("quick-style-selected");
   removeStorage("quick-style-edits");
   removeStorage("quick-style-changes");
