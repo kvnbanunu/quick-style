@@ -6,6 +6,7 @@ import { getStorage, setStorage } from "./utils/sessionStorage";
 import { stringToHTMLElements } from "./utils/util";
 import TextEditor from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
+import quickStyleIcon from "../assets/QuickStyle_Icon.png";
 
 export default function QuickStyle() {
   const [init, setInit] = useState(false);
@@ -17,6 +18,11 @@ export default function QuickStyle() {
   );
   const [innerText, setInnerText] = useState(null);
   const [edits, setEdits] = useState(new Map());
+  const [openSections, setOpenSections] = useState({ traverser: true, classes: true, text: false, attributes: false });
+
+  function toggleSection(key) {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
@@ -254,67 +260,150 @@ export default function QuickStyle() {
     return (
       <div
         id="quickstyle-editor"
-        className={`border bg-black w-md max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 ${sideClass} flex flex-col`}
+        className={`bg-zinc-900 border border-zinc-700/60 shadow-2xl shadow-black/60 w-80 max-h-[80vh] overflow-hidden z-[99999] rounded-2xl fixed bottom-6 ${sideClass} flex flex-col`}
       >
-        <div className="flex items-center justify-between p-2">
-          <p className="text-lg">Quick Style Editor</p>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setEditorSide("left")}>
-              Dock Left
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700/60 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <img
+              src={quickStyleIcon}
+              alt="Quick Style"
+              className="w-7 h-7 rounded-lg"
+            />
+            <span className="text-sm font-semibold text-white tracking-wide">
+              Quick Style
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setEditorSide("left")}
+              title="Dock left"
+              className="px-2 py-1 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
+            >
+              ← Left
             </button>
-            <button type="button" onClick={() => setEditorSide("right")}>
-              Dock Right
+            <button
+              type="button"
+              onClick={() => setEditorSide("right")}
+              title="Dock right"
+              className="px-2 py-1 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
+            >
+              Right →
             </button>
           </div>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <ElementTraverser
-            selected={selected}
-            selectElement={selectElement}
-            hoverBoxRef={hoverBoxRef}
-            selectBoxRef={selectBoxRef}
-          />
-          <ClassEditor
-            classes={classes}
-            selected={selected}
-            setClasses={setClasses}
-          />
-          <br />
-          <TextEditor
-            selected={selected}
-            innerText={innerText}
-            setInnerText={setInnerText}
-            setSelected={setSelected}
-          />
-          <br />
-          <AttributeEditor selected={selected} />
+
+        {/* Scrollable content */}
+        <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-zinc-700/40">
+
+          
+
+            {/* Element Traverser */ }
+            < div >
+            <button
+              type="button"
+              onClick={() => toggleSection("traverser")}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            >
+              <span className="uppercase tracking-widest">Element</span>
+              <span className={`transition-transform duration-200 ${openSections.traverser ? "rotate-180" : ""}`}>▾</span>
+            </button>
+            {openSections.traverser && (
+            <div className="px-3 pb-3">
+              <ElementTraverser
+                selected={selected}
+                selectElement={selectElement}
+                hoverBoxRef={hoverBoxRef}
+                selectBoxRef={selectBoxRef}
+              />
+            </div>
+          )}
         </div>
-        {/* <ElementDragger
-          updateBox={updateBox}
-          selected={selected}
-          hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef}
-        /> */}
-        <button
-          onClick={() => {
-            setIsOpen(false);
-          }}
-        >
-          Close
-        </button>
+
+        {/* Class Editor */}
+        <div>
+          <button
+            type="button"
+            onClick={() => toggleSection("classes")}
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+          >
+            <span className="uppercase tracking-widest">Classes</span>
+            <span className={`transition-transform duration-200 ${openSections.classes ? "rotate-180" : ""}`}>▾</span>
+          </button>
+          {openSections.classes && (
+            <div className="px-3 pb-3">
+              <ClassEditor
+                classes={classes}
+                selected={selected}
+                setClasses={setClasses}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Text Editor */}
+        <div>
+          <button
+            type="button"
+            onClick={() => toggleSection("text")}
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+          >
+            <span className="uppercase tracking-widest">Text</span>
+            <span className={`transition-transform duration-200 ${openSections.text ? "rotate-180" : ""}`}>▾</span>
+          </button>
+          {openSections.text && (
+            <div className="px-3 pb-3">
+              <TextEditor
+                selected={selected}
+                innerText={innerText}
+                setInnerText={setInnerText}
+                setSelected={setSelected}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Attribute Editor */}
+        <div>
+          <button
+            type="button"
+            onClick={() => toggleSection("attributes")}
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+          >
+            <span className="uppercase tracking-widest">Attributes</span>
+            <span className={`transition-transform duration-200 ${openSections.attributes ? "rotate-180" : ""}`}>▾</span>
+          </button>
+          {openSections.attributes && (
+            <div className="px-3 pb-3">
+              <AttributeEditor selected={selected} />
+            </div>
+          )}
+        </div>
+
       </div>
+
+        {/* Footer */ }
+    <div className="shrink-0 border-t border-zinc-700/60">
+      <button
+        type="button"
+        onClick={() => setIsOpen(false)}
+        className="w-full py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
+      >
+        Close
+      </button>
+    </div>
+      </div >
     );
   } else {
     return (
-      <button
+      <img
         id="quickstyle-editor"
-        onClick={() => {
-          setIsOpen(true);
-        }}
-        className={`fixed bottom-10 ${sideClass} z-10`}
-      >
-        Quick Style!
-      </button>
+        src={quickStyleIcon}
+        alt="Open Quick Style editor"
+        className={`w-12 h-12 rounded-2xl fixed bottom-6 ${sideClass} z-[99999] cursor-pointer shadow-lg hover:scale-105 transition-transform`}
+        onClick={() => setIsOpen(true)}
+      />
     );
   }
 }
