@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
+import { getStorage, setStorage } from "./utils/sessionStorage";
 import { stringToHTMLElements } from "./utils/util";
 import TextEditor from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
@@ -12,28 +12,31 @@ export default function QuickStyle() {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
-  const [panelSide, setPanelSide] = useState(() => getStorage("editorSide") || "right");
+  const [panelSide, setPanelSide] = useState(
+    () => getStorage("editorSide") || "right",
+  );
   const [innerText, setInnerText] = useState(null);
+  const [edits, setEdits] = useState(new Map());
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
   function turnOffQuickStyle() {
-    if (hoverBoxRef.current && selectBoxRef.current) {
+    if (hoverBoxRef.current || selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
 
+      document.removeEventListener("click", onQSClick, true);
       document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("click", onClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
       setStorage("quick-style-isOpen", false);
     }
   }
 
   function turnOnQuickStyle() {
-    if (hoverBoxRef.current && selectBoxRef.current) {
+    if (hoverBoxRef.current || selectBoxRef.current) {
+      document.addEventListener("click", onQSClick, true);
       document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("click", onClick, true);
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
@@ -45,21 +48,20 @@ export default function QuickStyle() {
     setPanelSide(side);
     setStorage("editorSide", side);
   }
-  const sideClass = panelSide === "left" ? "left-10 right-auto"
-    : "right-10 left-auto";
-  function onClick(e) {
-    if (!isOpen) return;
+  const sideClass =
+    panelSide === "left" ? "left-10 right-auto" : "right-10 left-auto";
 
+  const onQSClick = React.useCallback((e) => {
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
-    e.preventDefault();
     e.stopPropagation();
+    e.preventDefault();
 
     // Always store the latest clicked element
     setStorage("quick-style-selected", e.target.dataset.qsSrc);
     selectElement(e.target);
-  }
+  }, []);
 
   function onRightClick(e) {
     if (!isOpen) return;
@@ -156,18 +158,6 @@ export default function QuickStyle() {
     return () => observer.disconnect();
   }, [selected]);
 
-  // useEffect(() => {
-  //   if (!init) return;
-  //   if (selected === null) return;
-
-  //   setClasses(
-  //     (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
-  //   );
-  //   setInnerText(selected.innerHTML);
-  //   updateSelectBox(selected);
-  //   selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-  // }, [selected]);
-
   useEffect(() => {
     if (!selected || !(selected instanceof Element)) return;
 
@@ -182,7 +172,7 @@ export default function QuickStyle() {
 
   useEffect(() => {
     if (!init) return;
-    if (isOpen === true || isOpen === "true") {
+    if (isOpen) {
       turnOnQuickStyle();
     } else {
       turnOffQuickStyle();
@@ -220,9 +210,8 @@ export default function QuickStyle() {
     setInit(true);
 
     setIsOpen(isOpenVal);
-    if (selectedStore !== null) {
+    if (selectedStore !== null && selectedStore !== undefined) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      console.log(selectedStr);
       let selectedEl = document.querySelector(selectedStr);
       if (selectedEl) {
         setSelected(
@@ -231,25 +220,53 @@ export default function QuickStyle() {
       }
     }
 
+    const editStore = getStorage("quick-style-edits");
+    if (editStore !== null) {
+      const editMap = new Map(JSON.parse(editStore));
+      setEdits(editMap);
+      applyTempEdits();
+    }
+
     return () => {
       hoverBox.remove();
       selectBox.remove();
     };
   }, []);
 
-  // clear localStorage on app shutdown
-  if (import.meta.hot) {
-    import.meta.hot.on("vite:ws:disconnect", clearStorage);
+  useEffect(() => {
+    if (!init) return;
+    applyTempEdits();
+  }, [edits]);
+
+  function applyTempEdits() {
+    if (edits.size === 0) return;
+
+    for (const [element, classList] of edits) {
+      const el = document.querySelector(`[data-qs-src="${element}"]`);
+      if (el) {
+        const thisEl = stringToHTMLElements(el.outerHTML);
+        thisEl.setAttribute("class", classList.join(" "));
+      }
+    }
   }
 
   if (isOpen) {
-    
     return (
       <div
         id="quickstyle-editor"
         className={`border bg-black w-md max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 ${sideClass} flex flex-col`}
       >
-        <div className="flex items-center justify-between p-2"> <p className="text-lg">Quick Style Editor</p> <div className="flex gap-2"> <button type="button" onClick={() => setEditorSide("left")}> Dock Left </button> <button type="button" onClick={() => setEditorSide("right")}> Dock Right </button> </div> </div>
+        <div className="flex items-center justify-between p-2">
+          <p className="text-lg">Quick Style Editor</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setEditorSide("left")}>
+              Dock Left
+            </button>
+            <button type="button" onClick={() => setEditorSide("right")}>
+              Dock Right
+            </button>
+          </div>
+        </div>
         <div className="flex-1 min-h-0 overflow-y-auto">
           <ElementTraverser
             selected={selected}
@@ -261,7 +278,6 @@ export default function QuickStyle() {
             classes={classes}
             selected={selected}
             setClasses={setClasses}
-            setSelected={setSelected}
           />
           <br />
           <TextEditor
@@ -270,11 +286,8 @@ export default function QuickStyle() {
             setInnerText={setInnerText}
             setSelected={setSelected}
           />
-          <br/>
-          <AttributeEditor
-            selected={selected}
-          
-          />
+          <br />
+          <AttributeEditor selected={selected} />
         </div>
         {/* <ElementDragger
           updateBox={updateBox}

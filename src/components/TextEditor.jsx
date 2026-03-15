@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import ButtonEditor from "./ButtonEditor";
-import AttributeEditor from "./AttributeEditor";
 
 const CHILD_ELEMENT_OPTIONS = [
   "div",
@@ -17,7 +16,12 @@ const CHILD_ELEMENT_OPTIONS = [
 
 const VOID_TAGS = new Set(["img", "input", "br", "hr", "meta", "link"]);
 
-export default function TextEditor({ selected, innerText, setInnerText, setSelected }) {
+export default function TextEditor({
+  selected,
+  innerText,
+  setInnerText,
+  setSelected,
+}) {
   const [href, setHref] = useState("");
   const [textNodes, setTextNodes] = useState([]);
   const [newChildTag, setNewChildTag] = useState("div");
@@ -40,7 +44,8 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
   function getNodeByPath(root, path) {
     let current = root;
     for (const index of path) {
-      if (!current || !current.childNodes || !current.childNodes[index]) return null;
+      if (!current || !current.childNodes || !current.childNodes[index])
+        return null;
       current = current.childNodes[index];
     }
 
@@ -61,7 +66,8 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
         if (child.nodeType === Node.TEXT_NODE) {
           const value = child.textContent || "";
           if (value.trim().length > 0) {
-            const parentTag = child.parentElement?.tagName?.toLowerCase() || "node";
+            const parentTag =
+              child.parentElement?.tagName?.toLowerCase() || "node";
             collected.push({
               id: nextPath.join("."),
               path: nextPath,
@@ -145,7 +151,9 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
     if (shouldSaveHrefOwner) {
       const hrefOwnerCopy = hrefOwner.cloneNode(true);
       const selectedPath = getNodePath(selected, hrefOwner);
-      const selectedCopy = selectedPath ? getNodeByPath(hrefOwnerCopy, selectedPath) : null;
+      const selectedCopy = selectedPath
+        ? getNodeByPath(hrefOwnerCopy, selectedPath)
+        : null;
 
       if (selectedCopy) {
         selectedCopy.innerHTML = formattedHtml;
@@ -182,7 +190,10 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
 
     if (newChildTag === "img") {
       child.setAttribute("alt", "New image");
-      child.setAttribute("src", "https://via.placeholder.com/120x80?text=Image");
+      child.setAttribute(
+        "src",
+        "https://via.placeholder.com/120x80?text=Image",
+      );
       child.className = "bg-white border border-black";
     } else if (!VOID_TAGS.has(newChildTag)) {
       child.textContent = `New ${newChildTag}`;
@@ -216,7 +227,9 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
       Text Editor
       <div>
         {textNodes.length === 0 ? (
-          <p className="text-sm">No editable text nodes found in this element.</p>
+          <p className="text-sm">
+            No editable text nodes found in this element.
+          </p>
         ) : (
           textNodes.map((node, index) => (
             <div key={node.id} className="mb-2">
@@ -226,7 +239,9 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
               <textarea
                 placeholder="Edit text..."
                 value={node.value}
-                onChange={(e) => handleTextNodeChange(node.path, e.target.value)}
+                onChange={(e) =>
+                  handleTextNodeChange(node.path, e.target.value)
+                }
                 rows={2}
                 className="w-full min-h-12 max-h-36 resize-y overflow-y-auto align-top bg-blue-500 rounded-2xl pl-2 leading-6"
               />
@@ -261,3 +276,4 @@ export default function TextEditor({ selected, innerText, setInnerText, setSelec
     </div>
   );
 }
+

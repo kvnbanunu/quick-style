@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as utils from "./utils/helpers.js";
 
 export default function ElementDragger({
+  isOpen,
   updateBox,
   selected,
   hoverBoxRef,
@@ -11,6 +12,7 @@ export default function ElementDragger({
   const offsetRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (!isOpen) return;
     function onMouseDown(e) {
       if (!selected) return;
       if (e.target !== selected) return;
@@ -26,7 +28,10 @@ export default function ElementDragger({
 
       const parent = selected.parentElement;
 
-      if (utils.canUseParentContainer(selected) && parent instanceof HTMLElement) {
+      if (
+        utils.canUseParentContainer(selected) &&
+        parent instanceof HTMLElement
+      ) {
         const parentStyle = window.getComputedStyle(parent);
         const parentRect = parent.getBoundingClientRect();
 
@@ -44,8 +49,10 @@ export default function ElementDragger({
         }
 
         selected.style.position = "absolute";
-        selected.style.left = rect.left - parentRect.left + parent.scrollLeft + "px";
-        selected.style.top = rect.top - parentRect.top + parent.scrollTop + "px";
+        selected.style.left =
+          rect.left - parentRect.left + parent.scrollLeft + "px";
+        selected.style.top =
+          rect.top - parentRect.top + parent.scrollTop + "px";
       } else {
         const selectedStyle = window.getComputedStyle(selected);
         if (selectedStyle.position === "static") {
@@ -69,11 +76,19 @@ export default function ElementDragger({
       if (draggingRef.current && selected) {
         const parent = selected.parentElement;
 
-        if (utils.canUseParentContainer(selected) && parent instanceof HTMLElement) {
+        if (
+          utils.canUseParentContainer(selected) &&
+          parent instanceof HTMLElement
+        ) {
           const parentRect = parent.getBoundingClientRect();
 
-          let x = e.clientX - parentRect.left - offsetRef.current.x + parent.scrollLeft;
-          let y = e.clientY - parentRect.top - offsetRef.current.y + parent.scrollTop;
+          let x =
+            e.clientX -
+            parentRect.left -
+            offsetRef.current.x +
+            parent.scrollLeft;
+          let y =
+            e.clientY - parentRect.top - offsetRef.current.y + parent.scrollTop;
 
           x = Math.max(0, x);
           y = Math.max(0, y);
