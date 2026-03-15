@@ -4,7 +4,7 @@ import TailwindClassInput from "./TailWindClassInput";
 import TailwindClassMenus from "./TailWindClassMenus";
 import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { setStorage } from "./utils/localStorage";
+import { setStorage } from "./utils/sessionStorage";
 
 export default function ClassEditor({
   classes,
@@ -84,4 +84,3 @@ export default function ClassEditor({
     </div>
   );
 }
-
