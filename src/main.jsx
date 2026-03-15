@@ -15,7 +15,7 @@ createRoot(document.getElementById("root")).render(
     </div>
     <div className="min-h-screen bg-slate-100 p-8">
       <div className="mx-auto max-w-xl rounded-xl border border-slate-300 p-6 shadow-lg gap-8">
-        <h1 className="mb-4 text-2xl font-bold text-neutral-300">Test Element</h1>
+        <h1 className="mb-4 text-2xl font-bold text-neutral-300 text-yellow-600">Test Element</h1>
 
         {/* <button
        onClick={() => {
