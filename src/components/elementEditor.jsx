@@ -53,13 +53,13 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     const { fileName, lineNumber, columnNumber } = sourceInfo;
 
     const key = target.dataset.qsSrc;
-    storeChange("quick-style-changes", key, "changeClass", {
+    storeChange(key, "changeClass", {
       classes: newClasses,
       filePath: fileName,
       line_number: lineNumber,
       column_number: columnNumber + 1,
     });
-    storeEdit("quick-style-edits", key, "editClass", newClasses);
+    storeEdit(key, "editClass", newClasses);
     sendClass(cls);
   }
 
@@ -75,13 +75,13 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     const { fileName, lineNumber, columnNumber } = sourceInfo;
 
     const key = target.dataset.qsSrc;
-    storeChange("quick-style-changes", key, "changeClass", {
+    storeChange(key, "changeClass", {
       classes: newClasses,
       filePath: fileName,
       line_number: lineNumber,
       column_number: columnNumber + 1,
     });
-    storeEdit("quick-style-edits", key, "editClass", newClasses);
+    storeEdit(key, "editClass", newClasses);
     sendClass(cls);
   }
 

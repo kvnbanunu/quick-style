@@ -306,7 +306,7 @@ export default function QuickStyle() {
             ? val
             : null;
 
-        if (classEdit) {
+        if (classEdit !== null) {
           const nextClass = classEdit.join(" ").trim();
           if ((el.getAttribute("class") || "").trim() !== nextClass) {
             el.setAttribute("class", nextClass);
@@ -323,7 +323,7 @@ export default function QuickStyle() {
           }
         }
         if (val.addChild !== null) {
-          thisEl.innerHTML = val.addChild.inner;
+          el.innerHTML = val.addChild.inner;
         }
       }
     }
