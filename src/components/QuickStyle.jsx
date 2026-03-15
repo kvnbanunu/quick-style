@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { getStorage, setStorage } from "./utils/sessionStorage";
+import {
+  getMapFromStorage,
+  getStorage,
+  setStorage,
+} from "./utils/sessionStorage";
 import { stringToHTMLElements } from "./utils/util";
 import TextEditor from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
@@ -13,7 +17,7 @@ export default function QuickStyle() {
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
   const [panelSide, setPanelSide] = useState(
-    () => getStorage("editorSide") || "right",
+    () => getStorage("quick-style-editor-side") || "right",
   );
   const [innerText, setInnerText] = useState(null);
   const [edits, setEdits] = useState(new Map());
@@ -46,7 +50,7 @@ export default function QuickStyle() {
 
   function setEditorSide(side) {
     setPanelSide(side);
-    setStorage("editorSide", side);
+    setStorage("quick-style-editor-side", side);
   }
   const sideClass =
     panelSide === "left" ? "left-10 right-auto" : "right-10 left-auto";
@@ -220,12 +224,7 @@ export default function QuickStyle() {
       }
     }
 
-    const editStore = getStorage("quick-style-edits");
-    if (editStore !== null) {
-      const editMap = new Map(JSON.parse(editStore));
-      setEdits(editMap);
-      applyTempEdits();
-    }
+    setEdits(getMapFromStorage("quick-style-edits"));
 
     return () => {
       hoverBox.remove();
@@ -241,11 +240,13 @@ export default function QuickStyle() {
   function applyTempEdits() {
     if (edits.size === 0) return;
 
-    for (const [element, classList] of edits) {
-      const el = document.querySelector(`[data-qs-src="${element}"]`);
+    for (const [key, val] of edits) {
+      const el = document.querySelector(`[data-qs-src="${key}"]`);
       if (el) {
         const thisEl = stringToHTMLElements(el.outerHTML);
-        thisEl.setAttribute("class", classList.join(" "));
+        if (val.editClass !== null) {
+          thisEl.setAttribute("class", val.editClass.join(" "));
+        }
       }
     }
   }
