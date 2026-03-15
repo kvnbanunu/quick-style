@@ -101,7 +101,6 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
   const [open, setOpen] = useState(() =>
     Object.fromEntries(groups.map((g) => [g.name, false]))
   );
-  const warmedRef = useRef(new Set());
   return (
     <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
       {groups.map((group) => (
