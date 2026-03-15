@@ -1,9 +1,12 @@
 import { useEffect, useRef } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { setStorage } from "./utils/localStorage";
+import ButtonEditor from "./ButtonEditor";
+import { useState } from "react";
 
 export default function TextEditor({ selected, innerText, setInnerText }) {
   const textAreaRef = useRef(null);
+  const [href, setHref] = useState("");
+
 
   function removeQSSrcAttribute(el) {
     if (!el) return;
@@ -16,29 +19,62 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
     if (!selected) return;
 
     const formattedHtml = (innerText || "").replace(/>/g, ">\n");
-    const copy = selected.cloneNode(true);
-    copy.innerHTML = formattedHtml;
-    removeQSSrcAttribute(copy);
-    console.log("Updated element HTML:", copy.outerHTML);
+    const hrefOwner = selected.hasAttribute("href")
+      ? selected
+      : selected.closest("[href]");
+
+    const shouldSaveHrefOwner = hrefOwner && hrefOwner !== selected;
+
+    let elementToSave;
+    let sourceElement = selected;
+
+    if (shouldSaveHrefOwner) {
+      const hrefOwnerCopy = hrefOwner.cloneNode(true);
+      const selectedKey = selected.getAttribute("data-qs-src");
+
+      const selectedCopy = selectedKey
+        ? hrefOwnerCopy.querySelector(`[data-qs-src="${selectedKey}"]`)
+        : null;
+
+      if (selectedCopy) {
+        selectedCopy.innerHTML = formattedHtml;
+      }
+
+      hrefOwnerCopy.setAttribute("href", href || "");
+      elementToSave = hrefOwnerCopy;
+      sourceElement = hrefOwner;
+    } else {
+      const copy = selected.cloneNode(true);
+      copy.innerHTML = formattedHtml;
+
+      if (hrefOwner === selected) {
+        copy.setAttribute("href", href || "");
+      }
+
+      elementToSave = copy;
+    }
+
+    removeQSSrcAttribute(elementToSave);
+    console.log("Updated element HTML:", elementToSave.outerHTML);
     console.log(selected);
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(sourceElement);
 
     console.log("Source info:", { fileName, lineNumber, columnNumber });
 
-    // await fetch("/api/update-full-element", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     elementString: copy.outerHTML,
-    //     filePath: fileName,
-    //     line_number: lineNumber,
-    //     column_number: columnNumber + 1,
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => console.log("Backend response:", data))
-    //   .catch(console.error);
+    await fetch("/api/update-full-element", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        elementString: elementToSave.outerHTML,
+        filePath: fileName,
+        line_number: lineNumber,
+        column_number: columnNumber + 1,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("Backend response:", data))
+      .catch(console.error);
   }
 
   function resizeTextarea(el) {
@@ -83,6 +119,11 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
             onInput={(e) => resizeTextarea(e.target)}
             rows={2}
             className="w-full resize-none overflow-y-hidden align-top bg-blue-500 rounded-2xl pl-2 leading-6"
+          />
+          <ButtonEditor 
+            selected={selected} 
+            href={href}
+            setHref={setHref}
           />
           <button onClick={saveText}>Save</button>
         </div>
