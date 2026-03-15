@@ -9,7 +9,7 @@ function App() {
 
   return (
     <>
-      <div className="bg-red-500">
+      <div className="font-medium text-yellow-300 bg-slate-500">
         Test Element
         <div className="text-ellipsis text-yellow-400 bg-red-400">
           Child Element
