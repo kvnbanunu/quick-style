@@ -266,12 +266,12 @@ export default function QuickStyle() {
           innerText={innerText}
           setInnerText={setInnerText}
         />
-        <ElementDragger
+        {/* <ElementDragger
           updateBox={updateBox}
           selected={selected}
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
-        />
+        /> */}
         <button
           onClick={() => {
             setIsOpen(false);
