@@ -1,6 +1,3 @@
-import { QuickStyle } from 'quick-style-hackathon';
-import 'quick-style-hackathon/style.css';
-
 const projects = [
   {
     title: 'Project One',
