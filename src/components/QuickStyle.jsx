@@ -3,12 +3,12 @@ import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { getStorage, setStorage } from "./utils/sessionStorage";
-import { stringToHTMLElements } from "./utils/util";
 import TextEditor from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
 import quickStyleIcon from "../assets/QuickStyle_Icon.png";
 
 export default function QuickStyle() {
+  const SCROLL_STORAGE_KEY = "quick-style-scroll-position";
   const [init, setInit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -26,6 +26,17 @@ export default function QuickStyle() {
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
+
+  function findElementByQSSrc(qsSrc) {
+    if (!qsSrc) return null;
+
+    const allTagged = document.querySelectorAll("[data-qs-src]");
+    for (const el of allTagged) {
+      if (el.getAttribute("data-qs-src") === qsSrc) return el;
+    }
+
+    return null;
+  }
 
   function turnOffQuickStyle() {
     if (hoverBoxRef.current || selectBoxRef.current) {
@@ -61,12 +72,18 @@ export default function QuickStyle() {
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
+    const target =
+      e.target instanceof Element
+        ? e.target.closest("[data-qs-src]") || e.target
+        : null;
+    if (!target) return;
+
     e.stopPropagation();
     e.preventDefault();
 
     // Always store the latest clicked element
-    setStorage("quick-style-selected", e.target.dataset.qsSrc);
-    selectElement(e.target);
+    setStorage("quick-style-selected", target.getAttribute("data-qs-src"));
+    selectElement(target);
   }, []);
 
   const onQSRightClick = React.useCallback((e) => {
@@ -186,6 +203,17 @@ export default function QuickStyle() {
   }, [isOpen]);
 
   useEffect(() => {
+    const savedScroll = getStorage(SCROLL_STORAGE_KEY);
+    if (savedScroll) {
+      try {
+        const { x = 0, y = 0 } = JSON.parse(savedScroll);
+        // Wait one frame so layout is ready before restoring.
+        requestAnimationFrame(() => window.scrollTo(x, y));
+      } catch {
+        // Ignore malformed storage payloads.
+      }
+    }
+
     const hoverBox = document.createElement("div");
     const selectBox = document.createElement("div");
 
@@ -217,12 +245,9 @@ export default function QuickStyle() {
 
     setIsOpen(isOpenVal);
     if (selectedStore !== null && selectedStore !== undefined) {
-      const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      let selectedEl = document.querySelector(selectedStr);
+      const selectedEl = findElementByQSSrc(selectedStore);
       if (selectedEl) {
-        setSelected(
-          stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
-        );
+        setSelected(selectedEl);
       }
     }
 
@@ -244,17 +269,49 @@ export default function QuickStyle() {
     applyTempEdits();
   }, [edits]);
 
+  useEffect(() => {
+    let rafId = 0;
+
+    const persistScroll = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setStorage(
+          SCROLL_STORAGE_KEY,
+          JSON.stringify({ x: window.scrollX, y: window.scrollY }),
+        );
+      });
+    };
+
+    window.addEventListener("scroll", persistScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", persistScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   function applyTempEdits() {
     if (edits.size === 0) return;
 
     for (const [element, classList] of edits) {
-      const el = document.querySelector(`[data-qs-src="${element}"]`);
+      const el = findElementByQSSrc(element);
       if (el) {
-        const thisEl = stringToHTMLElements(el.outerHTML);
-        thisEl.setAttribute("class", classList.join(" "));
+        el.setAttribute("class", classList.join(" "));
       }
     }
   }
+
+  useEffect(() => {
+    if (!selected) return;
+
+    const key = selected.getAttribute("data-qs-src");
+    if (!key) return;
+
+    const liveSelected = findElementByQSSrc(key);
+    if (liveSelected && liveSelected !== selected) {
+      setSelected(liveSelected);
+    }
+  }, [selected, classes, innerText]);
 
   if (isOpen) {
     return (

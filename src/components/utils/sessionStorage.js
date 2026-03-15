@@ -15,6 +15,7 @@ export const storageKeys = [
   "quick-style-selected",
   "quick-style-edits",
   "quick-style-changes",
+  "quick-style-scroll-position",
 ];
 
 export function clearStorage() {

@@ -7,10 +7,33 @@ import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import { getStorage, setStorage } from "./utils/sessionStorage";
 
 export default function ClassEditor({ classes, selected, setClasses }) {
-  function applyClasses(list) {
-    if (!selected) return;
+  function getElementByQSSrc(qsSrc) {
+    if (!qsSrc) return null;
 
-    selected.setAttribute("class", list.join(" "));
+    const allTagged = document.querySelectorAll("[data-qs-src]");
+    for (const el of allTagged) {
+      if (el.getAttribute("data-qs-src") === qsSrc) return el;
+    }
+
+    return null;
+  }
+
+  function getLiveSelectedElement() {
+    if (!selected) return null;
+
+    const key = selected.dataset?.qsSrc;
+    const liveEl = key ? getElementByQSSrc(key) : null;
+
+    if (liveEl) return liveEl;
+    if (selected.isConnected) return selected;
+    return null;
+  }
+
+  function applyClasses(list) {
+    const target = getLiveSelectedElement();
+    if (!target) return;
+
+    target.setAttribute("class", list.join(" "));
     setClasses(list);
   }
 
@@ -22,10 +45,13 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
     applyClasses(newClasses);
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+    const target = getLiveSelectedElement();
+    if (!target) return;
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(target);
 
     // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
-    const key = selected.dataset.qsSrc;
+    const key = target.dataset.qsSrc;
     storeChanges(key, newClasses, fileName, lineNumber, columnNumber + 1);
     storeEdits(key, newClasses);
     sendClass(cls);
@@ -117,10 +143,13 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     const newClasses = classes.filter((c) => c !== cls);
     applyClasses(newClasses);
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+    const target = getLiveSelectedElement();
+    if (!target) return;
+
+    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(target);
 
     // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
-    const key = selected.dataset.qsSrc;
+    const key = target.dataset.qsSrc;
     storeChanges(key, newClasses, fileName, lineNumber, columnNumber + 1);
     storeEdits(key, newClasses);
     sendClass(cls);
