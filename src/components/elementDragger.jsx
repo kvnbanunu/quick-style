@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 export default function ElementDragger({
+  isOpen,
   updateBox,
   selected,
   hoverBoxRef,
@@ -21,7 +22,9 @@ export default function ElementDragger({
     if (isLayoutRoot) return false;
 
     const parentStyle = window.getComputedStyle(parent);
-    return parentStyle.display !== "inline" && parentStyle.display !== "contents";
+    return (
+      parentStyle.display !== "inline" && parentStyle.display !== "contents"
+    );
   }
 
   function ensureParentContains(el) {
@@ -49,6 +52,7 @@ export default function ElementDragger({
   }
 
   useEffect(() => {
+    if (!isOpen) return;
     function onMouseDown(e) {
       if (!selected) return;
       if (e.target !== selected) return;
@@ -80,8 +84,10 @@ export default function ElementDragger({
         }
 
         selected.style.position = "absolute";
-        selected.style.left = rect.left - parentRect.left + parent.scrollLeft + "px";
-        selected.style.top = rect.top - parentRect.top + parent.scrollTop + "px";
+        selected.style.left =
+          rect.left - parentRect.left + parent.scrollLeft + "px";
+        selected.style.top =
+          rect.top - parentRect.top + parent.scrollTop + "px";
       } else {
         const selectedStyle = window.getComputedStyle(selected);
         if (selectedStyle.position === "static") {
@@ -106,8 +112,13 @@ export default function ElementDragger({
         if (canUseParentContainer(selected) && parent instanceof HTMLElement) {
           const parentRect = parent.getBoundingClientRect();
 
-          let x = e.clientX - parentRect.left - offsetRef.current.x + parent.scrollLeft;
-          let y = e.clientY - parentRect.top - offsetRef.current.y + parent.scrollTop;
+          let x =
+            e.clientX -
+            parentRect.left -
+            offsetRef.current.x +
+            parent.scrollLeft;
+          let y =
+            e.clientY - parentRect.top - offsetRef.current.y + parent.scrollTop;
 
           x = Math.max(0, x);
           y = Math.max(0, y);
@@ -157,3 +168,4 @@ export default function ElementDragger({
 
   return <div></div>;
 }
+

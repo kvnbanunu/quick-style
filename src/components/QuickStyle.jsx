@@ -2,7 +2,13 @@ import { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
+import {
+  clearStorage,
+  getStorage,
+  localStorageKeys,
+  removeStorage,
+  setStorage,
+} from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 
 export default function QuickStyle() {
@@ -15,12 +21,12 @@ export default function QuickStyle() {
   const selectBoxRef = useRef(null);
 
   function turnOffQuickStyle() {
-    if (hoverBoxRef.current && selectBoxRef.current) {
+    if (hoverBoxRef.current || selectBoxRef.current) {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
 
       // document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("click", onQSClick);
       // document.removeEventListener("contextmenu", onRightClick);
       setStorage("quick-style-isOpen", false);
     }
@@ -29,7 +35,7 @@ export default function QuickStyle() {
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
       // document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("click", onClick, true);
+      document.addEventListener("click", onQSClick, true);
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
@@ -37,7 +43,7 @@ export default function QuickStyle() {
     }
   }
 
-  function onClick(e) {
+  function onQSClick(e) {
     if (!isOpen) return;
 
     const panel = document.getElementById("quickstyle-editor");
@@ -74,6 +80,7 @@ export default function QuickStyle() {
   }
 
   function updateSelectBox(el) {
+    if (!isOpen) return;
     const box = selectBoxRef.current;
     if (!box) return;
 
@@ -158,7 +165,7 @@ export default function QuickStyle() {
 
   useEffect(() => {
     if (!init) return;
-    if (isOpen === true || isOpen === "true") {
+    if (isOpen) {
       turnOnQuickStyle();
     } else {
       turnOffQuickStyle();
@@ -203,16 +210,13 @@ export default function QuickStyle() {
       );
     }
 
+    document.addEventListener("beforeunload", clearStorage);
+
     return () => {
       hoverBox.remove();
       selectBox.remove();
     };
   }, []);
-
-  // clear localStorage on app shutdown
-  if (import.meta.hot) {
-    import.meta.hot.on("vite:ws:disconnect", clearStorage);
-  }
 
   if (isOpen) {
     return (
@@ -234,6 +238,7 @@ export default function QuickStyle() {
           setSelected={setSelected}
         />
         <ElementDragger
+          isOpen={isOpen}
           updateBox={updateBox}
           selected={selected}
           hoverBoxRef={hoverBoxRef}
