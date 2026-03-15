@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import ButtonEditor from "./ButtonEditor";
+import { storeEdit, storeChange } from "./utils/sessionStorage";
 
 const CHILD_ELEMENT_OPTIONS = [
   "div",
@@ -16,42 +17,11 @@ const CHILD_ELEMENT_OPTIONS = [
 
 const VOID_TAGS = new Set(["img", "input", "br", "hr", "meta", "link"]);
 
-export default function TextEditor({
-  selected,
-  innerText,
-  setInnerText,
-  setSelected,
-}) {
+export default function TextEditor({ selected, setInnerText, setSelected }) {
   const [href, setHref] = useState("");
   const [textNodes, setTextNodes] = useState([]);
   const [newChildTag, setNewChildTag] = useState("div");
   const [childInsertPosition, setChildInsertPosition] = useState("end");
-
-  function getNodePath(node, ancestor) {
-    const path = [];
-    let current = node;
-
-    while (current && current !== ancestor) {
-      const parent = current.parentNode;
-      if (!parent) return null;
-
-      path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
-      current = parent;
-    }
-
-    return current === ancestor ? path : null;
-  }
-
-  function getNodeByPath(root, path) {
-    let current = root;
-    for (const index of path) {
-      if (!current || !current.childNodes || !current.childNodes[index])
-        return null;
-      current = current.childNodes[index];
-    }
-
-    return current;
-  }
 
   function collectEditableTextNodes(root) {
     if (!root) return [];
@@ -102,6 +72,23 @@ export default function TextEditor({
     if (liveNode && liveNode.nodeType === Node.TEXT_NODE) {
       liveNode.textContent = value;
       setInnerText(selected.innerHTML);
+
+      const key = selected.dataset.qsSrc;
+      storeEdit("quick-style-edits", key, "editText", {
+        path: path,
+        innerHTML: selected.innerHTML,
+        value: value,
+      });
+
+      const copy = selected.cloneNode(true);
+      removeQSSrcAttribute(copy);
+      const src = getReactSourceInfo(selected);
+      storeChange("quick-style-changes", key, "changeFull", {
+        elementString: copy.outerHTML,
+        filePath: src.fileName,
+        line_number: src.lineNumber,
+        column_number: src.columnNumber + 1,
+      });
     }
   }
 
@@ -110,71 +97,6 @@ export default function TextEditor({
     el.removeAttribute("data-qs-src");
     el.removeAttribute("style");
     Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
-  }
-
-  async function persistElement(sourceElement, elementToSave) {
-    const copy = elementToSave.cloneNode(true);
-    removeQSSrcAttribute(copy);
-
-    const sourceInfo = getReactSourceInfo(sourceElement);
-    if (!sourceInfo) return;
-
-    const { fileName, lineNumber, columnNumber } = sourceInfo;
-
-    await fetch("/api/update-full-element", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        elementString: copy.outerHTML,
-        filePath: fileName,
-        line_number: lineNumber,
-        column_number: columnNumber + 1,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Backend response:", data))
-      .catch(console.error);
-  }
-
-  async function saveText() {
-    if (!selected) return;
-
-    const formattedHtml = (selected.innerHTML || "").replace(/>/g, ">\n");
-    const hrefOwner = selected.hasAttribute("href")
-      ? selected
-      : selected.closest("[href]");
-
-    const shouldSaveHrefOwner = hrefOwner && hrefOwner !== selected;
-
-    let elementToSave = selected;
-    let sourceElement = selected;
-
-    if (shouldSaveHrefOwner) {
-      const hrefOwnerCopy = hrefOwner.cloneNode(true);
-      const selectedPath = getNodePath(selected, hrefOwner);
-      const selectedCopy = selectedPath
-        ? getNodeByPath(hrefOwnerCopy, selectedPath)
-        : null;
-
-      if (selectedCopy) {
-        selectedCopy.innerHTML = formattedHtml;
-      }
-
-      hrefOwnerCopy.setAttribute("href", href || "");
-      elementToSave = hrefOwnerCopy;
-      sourceElement = hrefOwner;
-    } else {
-      const copy = selected.cloneNode(true);
-      copy.innerHTML = formattedHtml;
-
-      if (hrefOwner === selected) {
-        copy.setAttribute("href", href || "");
-      }
-
-      elementToSave = copy;
-    }
-
-    await persistElement(sourceElement, elementToSave);
   }
 
   async function createChildElement() {
@@ -236,15 +158,17 @@ export default function TextEditor({
 
   return (
     <div className="flex flex-col gap-3">
-
       {/* Text nodes */}
       {textNodes.length === 0 ? (
-        <p className="text-xs text-zinc-500 italic">No editable text nodes found.</p>
+        <p className="text-xs text-zinc-500 italic">
+          No editable text nodes found.
+        </p>
       ) : (
         textNodes.map((node, index) => (
           <div key={node.id}>
             <div className="text-xs text-zinc-500 mb-1">
-              Text {index + 1} in <span className="text-zinc-400">{node.label}</span>
+              Text {index + 1} in{" "}
+              <span className="text-zinc-400">{node.label}</span>
             </div>
             <textarea
               placeholder="Edit text..."
@@ -272,7 +196,9 @@ export default function TextEditor({
           className="flex-1 bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-zinc-500 cursor-pointer transition-colors"
         >
           {CHILD_ELEMENT_OPTIONS.map((tag) => (
-            <option key={tag} value={tag}>{tag}</option>
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
           ))}
         </select>
         <select
@@ -291,17 +217,17 @@ export default function TextEditor({
           + Child
         </button>
       </div>
-
-      {/* Save */}
-      <button
-        type="button"
-        onClick={saveText}
-        className="w-full py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
-      >
-        Save Text
-      </button>
-
     </div>
   );
 }
 
+export function getNodeByPath(root, path) {
+  let current = root;
+  for (const index of path) {
+    if (!current || !current.childNodes || !current.childNodes[index])
+      return null;
+    current = current.childNodes[index];
+  }
+
+  return current;
+}
