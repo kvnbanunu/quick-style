@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @source "./tw-runtime/tw-runtime.txt";
+@source "./tw-runtime/prebuilt-classes.txt";
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

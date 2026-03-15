@@ -2,7 +2,7 @@ import tailwindClasses from "./tailwindClasses";
 import ClassPillList from "./ClassPillList";
 import TailwindClassInput from "./TailWindClassInput";
 import TailwindClassMenus from "./TailWindClassMenus";
-import { sendClass } from "../tw-runtime/tw-runtime";
+import { sendClass } from "../tw-runtime/sendClass";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import { pushUndoSnapshot, storeChange, storeEdit } from "./utils/sessionStorage";
 
