@@ -1,7 +1,6 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import tailwindClasses from "./tailwindClasses";
 import { isTextColorClass } from "./utils/helpers";
-import ColorSwatch from "./ColorSwatch";
 
 const GROUPS = [
   {
@@ -101,38 +100,29 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
   const [open, setOpen] = useState(() =>
     Object.fromEntries(groups.map((g) => [g.name, false]))
   );
+
   return (
-    <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+    <div className="mt-1 grid gap-2">
       {groups.map((group) => (
-        <div key={group.name} style={{ border: "1px solid #334155", borderRadius: 6 }}>
+        <div
+          key={group.name}
+          className="overflow-hidden rounded-lg border border-zinc-700"
+        >
           <button
             type="button"
             onClick={() => setOpen((s) => ({ ...s, [group.name]: !s[group.name] }))}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "6px 8px",
-              border: "none",
-              cursor: "pointer",
-              background: "#111827",
-              color: "#e5e7eb",
-              borderRadius: 6,
-            }}
+            className="flex w-full items-center justify-between bg-zinc-900 px-3 py-2 text-left text-xs font-medium uppercase tracking-widest text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
           >
-            {group.name}
+            <span>{group.name}</span>
+            <span
+              className={`text-sm transition-transform ${open[group.name] ? "rotate-180" : ""}`}
+            >
+              ▾
+            </span>
           </button>
 
           {open[group.name] && (
-            <div
-              style={{
-                padding: 8,
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 6,
-                maxHeight: 180,
-                overflowY: "auto",
-              }}
-            >
+            <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto bg-zinc-950/50 p-2">
               {group.options.slice(0, 120).map((cls) => {
                 const active = selectedClasses.includes(cls);
                 return (
@@ -140,20 +130,8 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
                     key={cls}
                     type="button"
                     onClick={() => onToggleClass(cls)}
-                    style={{
-                      fontSize: 12,
-                      borderRadius: 999,
-                      padding: "4px 8px",
-                      border: "1px solid #475569",
-                      background: active ? "#1d4ed8" : "#1f2937",
-                      color: "#fff",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      position: "relative",
-                    }}
+                    className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer ${active ? "border-blue-500 bg-blue-600 text-white" : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white"}`}
                   >
-                    {/* <ColorSwatch cls={cls} /> */}
                     {cls}
                   </button>
                 );

@@ -66,7 +66,7 @@ export default function TailwindClassInput({ allClasses, onAddClass }) {
   }
 
   return (
-    <div style={{ position: "relative", marginTop: 8 }}>
+    <div className="relative mt-1">
       <input
         ref={inputRef}
         value={value}
@@ -75,26 +75,11 @@ export default function TailwindClassInput({ allClasses, onAddClass }) {
         placeholder="search a class..."
         autoComplete="off"
         spellCheck={false}
-        className="bg-blue-500 rounded-2xl pl-2 h-8"
-        style={{ width: "100%", boxSizing: "border-box" }}
+        className="h-9 w-full box-border rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
       />
       {suggestions.length > 0 && (
         <ul
-          style={{
-            position: "absolute",
-            bottom: "100%",
-            left: 0,
-            right: 0,
-            background: "#1a1a1a",
-            border: "1px solid #555",
-            borderRadius: 4,
-            listStyle: "none",
-            margin: 0,
-            padding: 0,
-            maxHeight: 200,
-            overflowY: "auto",
-            zIndex: 1000001,
-          }}
+          className="absolute bottom-full left-0 right-0 z-[1000001] mb-1 max-h-52 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 p-1 shadow-xl shadow-black/40"
         >
           {suggestions.map((cls, i) => (
             <li
@@ -104,17 +89,7 @@ export default function TailwindClassInput({ allClasses, onAddClass }) {
                 commit(cls);
               }}
               onMouseEnter={() => setHighlightedIndex(i)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "4px 8px",
-                cursor: "pointer",
-                fontSize: 12,
-                fontFamily: "monospace",
-                background: i === highlightedIndex ? "#2563eb" : "transparent",
-                color: "#fff",
-              }}
+              className={`flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-xs text-white ${i === highlightedIndex ? "bg-blue-600" : "bg-transparent hover:bg-zinc-800"}`}
             >
               <span>{cls}</span>
               <div

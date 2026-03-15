@@ -135,19 +135,30 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   }
 
   if (!selected) {
-    return <div className="bg-blue-700">Select an Element</div>;
+    return <p className="text-xs text-zinc-500 italic">Select an element.</p>;
   }
 
   return (
-    <div className="bg-blue-700 flex-1 min-h-0 p-2">
-      Class Editor
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-zinc-500 uppercase tracking-widest">
+          Applied Classes
+        </p>
+        <span className="text-xs text-zinc-500">{classes.length}</span>
+      </div>
       <TailwindClassMenus
         selectedClasses={classes}
         onToggleClass={toggleClass}
       />
       <TailwindClassInput allClasses={tailwindClasses} onAddClass={addClass} />
       <ClassPillList classes={classes} onRemoveClass={removeClass} />
-      <button onClick={saveAll}>Save Class Changes</button>
+      <button
+        type="button"
+        onClick={saveAll}
+        className="w-full py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
+      >
+        Save Class Changes
+      </button>
     </div>
   );
 }

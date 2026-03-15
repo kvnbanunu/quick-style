@@ -71,12 +71,12 @@ export default function AttributeEditor({ selected }) {
   }
 
   if (!selected) {
-    return <div></div>;
+    return null;
   }
+
   return (
-    <div className="bg-blue-700 flex-1 p-2">
-      <p>Attribute Editor</p>
-      <div className="mt-2 flex flex-row items-center justify-center gap-10">
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <textarea
           type="text"
           placeholder="Attribute name"
@@ -84,7 +84,7 @@ export default function AttributeEditor({ selected }) {
           onChange={(e) => setAttributeName(e.target.value)}
           onInput={(e) => resizeTextarea(e.target)}
           rows={1}
-          className="w-40 resize-none overflow-y-hidden py-1 bg-blue-500 rounded-2xl text-center leading-6"
+          className="w-full resize-none overflow-y-hidden bg-zinc-800 text-zinc-100 placeholder-zinc-600 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm leading-5 focus:outline-none focus:border-zinc-500 transition-colors"
         />
         <textarea
           type="text"
@@ -93,31 +93,44 @@ export default function AttributeEditor({ selected }) {
           onChange={(e) => setAttributeValue(e.target.value)}
           onInput={(e) => resizeTextarea(e.target)}
           rows={1}
-          className="w-40 resize-none overflow-y-hidden py-1 bg-blue-500 rounded-2xl text-center leading-6"
+          className="w-full resize-none overflow-y-hidden bg-zinc-800 text-zinc-100 placeholder-zinc-600 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm leading-5 focus:outline-none focus:border-zinc-500 transition-colors"
         />
       </div>
-      <div className="mt-3 flex justify-center">
+
+      <div>
         <button
+          type="button"
           onClick={saveAttribute}
-          className="px-4 py-1 bg-blue-500 rounded-2xl"
+          className="w-full py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
         >
-          Save
+          Save Attribute
         </button>
       </div>
-      <div className="mt-4 space-y-2">
-        <p>Current Attributes</p>
+
+      <div className="space-y-2">
+        <p className="text-xs text-zinc-500 uppercase tracking-widest">
+          Current Attributes
+        </p>
         {filteredAttributes.length === 0 ? (
-          <p className="text-sm">No extra attributes on this element.</p>
+          <p className="text-xs text-zinc-500 italic">
+            No extra attributes on this element.
+          </p>
         ) : (
           filteredAttributes.map((attribute) => (
             <div
               key={attribute.name}
-              className="bg-blue-500 rounded-2xl px-3 py-2 text-sm flex items-center justify-between gap-2"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 flex items-start justify-between gap-3"
             >
-              <span>{attribute.name}: {attribute.value}</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-zinc-500">{attribute.name}</div>
+                <div className="break-words text-sm text-zinc-200">
+                  {attribute.value || "(empty)"}
+                </div>
+              </div>
               <button
+                type="button"
                 onClick={() => removeAttribute(attribute.name)}
-                className="px-2 py-1 bg-blue-700 rounded-xl"
+                className="shrink-0 px-2.5 py-1 text-xs font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer"
               >
                 Remove
               </button>
