@@ -119,7 +119,11 @@ export default function ClassEditor({ classes, selected, setClasses }) {
 
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
 
-    saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
+    // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
+    const key = selected.dataset.qsSrc;
+    storeChanges(key, newClasses, fileName, lineNumber, columnNumber + 1);
+    storeEdits(key, newClasses);
+    sendClass(cls);
   }
 
   function toggleClass(cls) {
