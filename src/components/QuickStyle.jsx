@@ -251,12 +251,6 @@ export default function QuickStyle() {
       >
         <div className="flex items-center justify-between p-2"> <p className="text-lg">Quick Style Editor</p> <div className="flex gap-2"> <button type="button" onClick={() => setEditorSide("left")}> Dock Left </button> <button type="button" onClick={() => setEditorSide("right")}> Dock Right </button> </div> </div>
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <ClassEditor
-            classes={classes}
-            selected={selected}
-            setClasses={setClasses}
-            setSelected={setSelected}
-          />
           <ElementTraverser
             selected={selected}
             selectElement={selectElement}
