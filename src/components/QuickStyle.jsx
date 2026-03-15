@@ -5,6 +5,7 @@ import ElementTraverser from "./elementTraverser";
 import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
 import TextEditor from "./TextEditor";
+import AttributeEditor from "./AttributeEditor";
 
 export default function QuickStyle() {
   const [init, setInit] = useState(false);
@@ -259,6 +260,11 @@ export default function QuickStyle() {
             selected={selected}
             innerText={innerText}
             setInnerText={setInnerText}
+          />
+          <br/>
+          <AttributeEditor
+            selected={selected}
+          
           />
           <ElementDragger
             updateBox={updateBox}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import ButtonEditor from "./ButtonEditor";
+import AttributeEditor from "./AttributeEditor";
 
 export default function TextEditor({ selected, innerText, setInnerText }) {
   const [href, setHref] = useState("");
@@ -162,7 +163,7 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
     return (<div></div>);
   } else {
     return (
-      <div className="bg-blue-700 flex-1">
+      <div className="bg-blue-700 flex-1 p-2">
         Text Editor
         <div>
           {textNodes.length === 0 ? (
@@ -181,11 +182,13 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
               </div>
             ))
           )}
+        
           <ButtonEditor 
             selected={selected} 
             href={href}
             setHref={setHref}
           />
+          <br/>
           <button onClick={saveText}>Save</button>
         </div>
       </div>
