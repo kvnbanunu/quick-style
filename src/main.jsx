@@ -7,22 +7,19 @@ import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QuickStyle />
-    <div className="text-ellipsis text-yellow-400 bg-red-400">
-          Poo Element
-          <p className="">Paragraph</p>
-          <p className="gap-y-64">Paragraph</p>
-        </div>
+    <button className="rounded-md px-4 py-2">Tesdacdasccsas</button>
+    <div className="text-ellipsis bg-red-400">
+      Poo Element
+      <p className="">Paragraph</p>
+      <p className="gap-y-64">Paragraph</p>
+    </div>
     <div className="min-h-screen bg-slate-100 p-8">
-      <div className="mx-auto max-w-xl rounded-xl border border-slate-300 p-6 shadow-lg bg-yellow-700 gap-8">
+      <div className="mx-auto max-w-xl rounded-xl border border-slate-300 p-6 shadow-lg gap-8">
         <h1 className="mb-4 text-2xl font-bold text-gray-700">Test Element</h1>
 
-        <button
+        {/* <button
        onClick={() => {
-         const element  = `<div className="text-ellipsis text-yellow-400 bg-red-400">
-          Poo Element
-          <p className="">Paragraph</p>
-          <p className="gap-y-64">Paragraph</p>
-        </div>`;
+         const element  = `<button class="rounded-md px-4 py-2">Test sasasaas</button>`;
          const line = 10;
          const col = 5;
          const filePath = "/Users/reecemelnick/Desktop/hack/quick-style/src/main.jsx";
@@ -43,7 +40,7 @@ createRoot(document.getElementById("root")).render(
        }}
      >
        Update Header
-     </button>
+     </button> */}
 
         <div className="space-y-3 rounded-lg bg-slate-50 p-4 bg-red-600">
           <div className="rounded-md px-3 py-2 bg-purple-600">
