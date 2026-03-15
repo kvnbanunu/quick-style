@@ -57,6 +57,19 @@ export default function AttributeEditor({ selected }) {
     await persistElement(selected);
   }
 
+  function resizeTextarea(el) {
+    if (!el) return;
+
+    el.style.height = "auto";
+    const lineHeight = parseFloat(window.getComputedStyle(el).lineHeight) || 24;
+    const minHeight = lineHeight;
+    const maxHeight = lineHeight * 4;
+    const nextHeight = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
+
+    el.style.height = `${nextHeight}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
+  }
+
   if (!selected) {
     return <div></div>;
   }
@@ -64,19 +77,23 @@ export default function AttributeEditor({ selected }) {
     <div className="bg-blue-700 flex-1 p-2">
       <p>Attribute Editor</p>
       <div className="mt-2 flex flex-row items-center justify-center gap-10">
-        <input
+        <textarea
           type="text"
           placeholder="Attribute name"
           value={attributeName}
           onChange={(e) => setAttributeName(e.target.value)}
-          className="w-40 py-1 bg-blue-500 rounded-2xl text-center"
+          onInput={(e) => resizeTextarea(e.target)}
+          rows={1}
+          className="w-40 resize-none overflow-y-hidden py-1 bg-blue-500 rounded-2xl text-center leading-6"
         />
-        <input
+        <textarea
           type="text"
           placeholder="Attribute value"
           value={attributeValue}
           onChange={(e) => setAttributeValue(e.target.value)}
-          className="w-40 py-1 bg-blue-500 rounded-2xl text-center"
+          onInput={(e) => resizeTextarea(e.target)}
+          rows={1}
+          className="w-40 resize-none overflow-y-hidden py-1 bg-blue-500 rounded-2xl text-center leading-6"
         />
       </div>
       <div className="mt-3 flex justify-center">
