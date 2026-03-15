@@ -4,12 +4,14 @@ import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
+import TextEditor from "./TextEditor";
 
 export default function QuickStyle() {
   const [isOpenInit, setIsOpenInit] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
+  const [innerText, setInnerText] = useState(null);
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
@@ -152,10 +154,17 @@ export default function QuickStyle() {
     setClasses(
       (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
     );
+    setInnerText(selected.innerHTML);
     updateSelectBox(selected);
     selected.scrollIntoView({ block: "nearest", inline: "nearest" });
     return;
   }, [selected]);
+
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
+    updateSelectBox(selected);
+  }, [innerText, selected]);
 
   useEffect(() => {
     if (isOpenInit === null) return;
@@ -220,6 +229,12 @@ export default function QuickStyle() {
           selected={selected}
           setClasses={setClasses}
           setSelected={setSelected}
+        />
+        <br/>
+        <TextEditor 
+          selected={selected} 
+          innerText={innerText}
+          setInnerText={setInnerText}
         />
         <ElementDragger
           updateBox={updateBox}
