@@ -268,6 +268,7 @@ export default function QuickStyle() {
             selected={selected}
             innerText={innerText}
             setInnerText={setInnerText}
+            setSelected={setSelected}
           />
           <br/>
           <AttributeEditor

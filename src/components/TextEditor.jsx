@@ -17,7 +17,7 @@ const CHILD_ELEMENT_OPTIONS = [
 
 const VOID_TAGS = new Set(["img", "input", "br", "hr", "meta", "link"]);
 
-export default function TextEditor({ selected, innerText, setInnerText }) {
+export default function TextEditor({ selected, innerText, setInnerText, setSelected }) {
   const [href, setHref] = useState("");
   const [textNodes, setTextNodes] = useState([]);
   const [newChildTag, setNewChildTag] = useState("div");
@@ -171,6 +171,7 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
   async function createChildElement() {
     if (!selected) return;
 
+    const parent = selected;
     const child = document.createElement(newChildTag);
 
     child.className = "bg-white border border-black text-black p-2";
@@ -187,11 +188,14 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
       child.textContent = `New ${newChildTag}`;
     }
 
-    selected.appendChild(child);
-    setInnerText(selected.innerHTML);
-    setTextNodes(collectEditableTextNodes(selected));
-
+    // selected.appendChild(child);
+    // setInnerText(selected.innerHTML);
+    // setTextNodes(collectEditableTextNodes(selected));
+    parent.appendChild(child);
+    setInnerText(parent.innerHTML);
     await persistElement(selected, selected);
+
+    setSelected(child);
   }
 
   useEffect(() => {
