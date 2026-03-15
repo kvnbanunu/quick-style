@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tailwindRuntime from "./src/tw-runtime/tw-runtime";
 import { codeUpdaterEndpoint } from "./src/utils/codeUpdaterEndpoint.js";
 import { elementUpdater } from "./src/utils/elementUpdater.js";
+import { deleteUpdater } from "./src/utils/deleteElement.js";
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
@@ -24,6 +25,7 @@ export default defineConfig({
       configureServer(server) {
         codeUpdaterEndpoint(server);
         elementUpdater(server);
+        deleteUpdater(server);
       }
     },
   ],
