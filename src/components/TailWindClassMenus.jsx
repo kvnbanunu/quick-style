@@ -130,7 +130,7 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
                     key={cls}
                     type="button"
                     onClick={() => onToggleClass(cls)}
-                    className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer ${active ? "border-blue-500 bg-blue-600 text-white" : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white"}`}
+                    className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer ${active ? "border-sky-200 bg-sky-300 text-red-400 font-medium shadow-sm" : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white"}`}
                   >
                     {cls}
                   </button>
