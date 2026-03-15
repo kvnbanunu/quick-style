@@ -209,6 +209,15 @@ export default function TextEditor({
     setSelected(child);
   }
 
+  // 6 lines × 20px line-height + 12px vertical padding (py-1.5 = 6px × 2)
+  const MAX_TEXTAREA_HEIGHT = 6 * 20 + 12;
+
+  function autoResize(el) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT) + "px";
+  }
+
   useEffect(() => {
     if (!selected) {
       setTextNodes([]);
@@ -219,60 +228,68 @@ export default function TextEditor({
   }, [selected]);
 
   if (!selected) {
-    return <div></div>;
+    return null;
   }
 
   return (
-    <div className="bg-blue-700 flex-1">
-      Text Editor
-      <div>
-        {textNodes.length === 0 ? (
-          <p className="text-sm">
-            No editable text nodes found in this element.
-          </p>
-        ) : (
-          textNodes.map((node, index) => (
-            <div key={node.id} className="mb-2">
-              <div className="text-xs opacity-80">
-                Text node {index + 1} in {node.label}
-              </div>
-              <textarea
-                placeholder="Edit text..."
-                value={node.value}
-                onChange={(e) =>
-                  handleTextNodeChange(node.path, e.target.value)
-                }
-                rows={2}
-                className="w-full min-h-12 max-h-36 resize-y overflow-y-auto align-top bg-blue-500 rounded-2xl pl-2 leading-6"
-              />
+    <div className="flex flex-col gap-3">
+
+      {/* Text nodes */}
+      {textNodes.length === 0 ? (
+        <p className="text-xs text-zinc-500 italic">No editable text nodes found.</p>
+      ) : (
+        textNodes.map((node, index) => (
+          <div key={node.id}>
+            <div className="text-xs text-zinc-500 mb-1">
+              Text {index + 1} in <span className="text-zinc-400">{node.label}</span>
             </div>
-          ))
-        )}
+            <textarea
+              placeholder="Edit text..."
+              value={node.value}
+              ref={(el) => autoResize(el)}
+              onChange={(e) => {
+                handleTextNodeChange(node.path, e.target.value);
+                autoResize(e.target);
+              }}
+              rows={1}
+              className="w-full resize-none overflow-y-auto bg-zinc-800 text-zinc-100 placeholder-zinc-600 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm leading-5 focus:outline-none focus:border-zinc-500 transition-colors"
+            />
+          </div>
+        ))
+      )}
 
-        <div className="mt-2 flex items-center gap-2">
-          <select
-            value={newChildTag}
-            onChange={(e) => setNewChildTag(e.target.value)}
-            className="rounded border border-slate-400 bg-black px-2 py-1 text-white"
-          >
-            {CHILD_ELEMENT_OPTIONS.map((tag) => (
-              <option key={tag} value={tag}>
-                {tag}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={createChildElement}
-            className="rounded border border-slate-400 bg-black px-3 py-1 text-white"
-          >
-            Create Child
-          </button>
-        </div>
+      {/* Href editor */}
+      <ButtonEditor selected={selected} href={href} setHref={setHref} />
 
-        <ButtonEditor selected={selected} href={href} setHref={setHref} />
-        <button onClick={saveText}>Save</button>
+      {/* Add child element */}
+      <div className="flex items-center gap-2">
+        <select
+          value={newChildTag}
+          onChange={(e) => setNewChildTag(e.target.value)}
+          className="flex-1 bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-zinc-500 cursor-pointer transition-colors"
+        >
+          {CHILD_ELEMENT_OPTIONS.map((tag) => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={createChildElement}
+          className="px-3 py-1.5 text-xs font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+        >
+          + Child
+        </button>
       </div>
+
+      {/* Save */}
+      <button
+        type="button"
+        onClick={saveText}
+        className="w-full py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer"
+      >
+        Save Text
+      </button>
+
     </div>
   );
 }

@@ -18,21 +18,15 @@ export default function ButtonEditor({ selected, href, setHref }) {
     setHref(hrefTarget.getAttribute("href") || "");
   }, [selected, setHref]);
 
-  if(!selected) {
-    return (
-      <div></div>
-    )
-  }
+  if (!selected) return null;
 
   const hrefTarget = getHrefTarget(selected);
 
-  if (!hrefTarget) {
-    return <div></div>;
-  }
+  if (!hrefTarget) return null;
 
   return (
     <div>
-      href Editor
+      <div className="text-xs text-zinc-500 mb-1">href</div>
       <textarea
         placeholder="Edit href..."
         value={href || ""}
@@ -42,7 +36,7 @@ export default function ButtonEditor({ selected, href, setHref }) {
           hrefTarget.setAttribute("href", value);
         }}
         rows={1}
-        className="w-full resize-none overflow-y-hidden align-top bg-blue-500 rounded-2xl pl-2 leading-6"
+        className="w-full resize-none bg-zinc-800 text-zinc-100 placeholder-zinc-600 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm leading-5 focus:outline-none focus:border-zinc-500 transition-colors"
       />
     </div>
   );
