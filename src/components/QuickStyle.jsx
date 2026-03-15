@@ -129,6 +129,7 @@ export default function QuickStyle() {
     updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
+      setInnerText(selected.innerHTML);
     };
 
     syncClasses();
@@ -147,17 +148,17 @@ export default function QuickStyle() {
     return () => observer.disconnect();
   }, [selected]);
 
-  useEffect(() => {
-    if (!init) return;
-    if (selected === null) return;
+  // useEffect(() => {
+  //   if (!init) return;
+  //   if (selected === null) return;
 
-    setClasses(
-      (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
-    );
-    setInnerText(selected.innerHTML);
-    updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [selected]);
+  //   setClasses(
+  //     (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
+  //   );
+  //   setInnerText(selected.innerHTML);
+  //   updateSelectBox(selected);
+  //   selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // }, [selected]);
 
   useEffect(() => {
     if (!selected || !(selected instanceof Element)) return;
@@ -213,9 +214,13 @@ export default function QuickStyle() {
     setIsOpen(isOpenVal);
     if (selectedStore !== null) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      setSelected(
-        stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
-      );
+      console.log(selectedStr);
+      let selectedEl = document.querySelector(selectedStr);
+      if (selectedEl) {
+        setSelected(
+          stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
+        );
+      }
     }
 
     return () => {
@@ -248,9 +253,9 @@ export default function QuickStyle() {
           setClasses={setClasses}
           setSelected={setSelected}
         />
-        <br/>
-        <TextEditor 
-          selected={selected} 
+        <br />
+        <TextEditor
+          selected={selected}
           innerText={innerText}
           setInnerText={setInnerText}
         />

@@ -5,29 +5,39 @@ import { setStorage } from "./utils/localStorage";
 export default function TextEditor({ selected, innerText, setInnerText }) {
   const textAreaRef = useRef(null);
 
+  function removeQSSrcAttribute(el) {
+    if (!el) return;
+    el.removeAttribute("data-qs-src");
+    Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
+  }
+
   async function saveText() {
     if (!selected) return;
 
     const formattedHtml = (innerText || "").replace(/>/g, ">\n");
-    selected.innerHTML = formattedHtml;
-    console.log("Updated element HTML:", selected.outerHTML);
-    setStorage("quick-style-selected", selected.outerHTML);
+    const copy = selected.cloneNode(true);
+    copy.innerHTML = formattedHtml;
+    removeQSSrcAttribute(copy);
+    console.log("Updated element HTML:", copy.outerHTML);
+    console.log(selected);
 
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
 
-    await fetch("/api/update-full-element", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        updatedElement: selected.outerHTML,
-        filePath: fileName,
-        line_number: lineNumber,
-        column_number: columnNumber + 1,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Backend response:", data))
-      .catch(console.error);
+    console.log("Source info:", { fileName, lineNumber, columnNumber });
+
+    // await fetch("/api/update-full-element", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     elementString: copy.outerHTML,
+    //     filePath: fileName,
+    //     line_number: lineNumber,
+    //     column_number: columnNumber + 1,
+    //   }),
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => console.log("Backend response:", data))
+    //   .catch(console.error);
   }
 
   function resizeTextarea(el) {
@@ -66,7 +76,7 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
               setInnerText(value);
               if (selected) {
                 selected.innerHTML = value;
-                setStorage("quick-style-selected", selected.outerHTML);
+                // setStorage("quick-style-selected", selected.outerHTML);
               }
             }}
             onInput={(e) => resizeTextarea(e.target)}
