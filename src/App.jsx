@@ -47,9 +47,9 @@ function App() {
           </p>
         </article>
 
-        <article className="p-8 bg-surface rounded-xl border border-brand-border bg-green-500">
+        <article className="p-8 bg-surface rounded-xl border border-brand-border">
           <p className="text-xs uppercase font-bold text-muted mb-2">Skills</p>
-          <h2 className="text-2xl font-bold text-heading mb-4">Tools I use</h2>
+          <h2 className="text-2xl font-bold text-heading mb-4 bg-red-600">Tools I use</h2>
           <div className="flex flex-wrap gap-2">
             {skills.map((skill) => (
               <span key={skill} className="px-3 py-1 text-sm bg-surface-strong border border-brand-border rounded text-brand-text shadow-sm">
@@ -68,7 +68,7 @@ function App() {
         
         <div className="grid md:grid-cols-2 gap-6">
           {projects.map((project) => (
-            <article key={project.title} className="p-6 bg-surface-strong rounded-xl border border-brand-border group hover:border-accent transition-colors bg-purple-600">
+            <article key={project.title} className="p-6 bg-surface-strong rounded-xl border border-brand-border group hover:border-accent transition-colors">
               <p className="text-xs font-mono text-accent mb-2">{project.stack}</p>
               <h3 className="text-xl font-bold text-heading">{project.title}</h3>
               <p className="text-muted mt-2">{project.description}</p>

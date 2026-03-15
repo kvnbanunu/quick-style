@@ -5,8 +5,8 @@ import fs from "fs";
 import path from "path";
 
 // this receives a new tailwind class and appends it to tw-runtime.txt
-export default function tailwindRuntime() {
-  const runtimeFile = path.resolve("src/tw-runtime/tw-runtime.txt");
+export function tailwindRuntime() {
+  const runtimeFile = path.resolve("./tw-runtime.txt");
 
   function clearFile() {
     fs.writeFileSync(runtimeFile, "");
