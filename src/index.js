@@ -16,7 +16,6 @@ export const quickStyle = () => {
       };
     },
     configureServer(server) {
-      console.log("🚀 QuickStyle: API Bridge Active");
       codeUpdaterEndpoint(server);
       elementUpdater(server);
     },
