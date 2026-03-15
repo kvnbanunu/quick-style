@@ -15,6 +15,7 @@ export const storageKeys = [
   "quick-style-selected",
   "quick-style-edits",
   "quick-style-changes",
+  "quick-style-undo-stack",
   "quick-style-scroll-position",
   "quick-style-editor-side",
 ];
@@ -90,4 +91,76 @@ export function storeChange(key, type, obj) {
 
   const storeStr = JSON.stringify([...store]);
   setStorage("quick-style-changes", storeStr);
+}
+
+function cloneSerializable(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+export function captureElementState(el) {
+  if (!el) return null;
+
+  return {
+    className: el.getAttribute("class") || "",
+    innerHTML: el.innerHTML,
+    hidden: !!el.hidden,
+    attributes: Array.from(el.attributes || []).map((attr) => [
+      attr.name,
+      attr.value,
+    ]),
+  };
+}
+
+export function restoreElementState(el, state) {
+  if (!el || !state) return;
+
+  const keepAttrs = new Set(["data-qs-src"]);
+  for (const attr of Array.from(el.attributes || [])) {
+    if (!keepAttrs.has(attr.name)) {
+      el.removeAttribute(attr.name);
+    }
+  }
+
+  for (const [name, value] of state.attributes || []) {
+    if (name === "data-qs-src") continue;
+    el.setAttribute(name, value);
+  }
+
+  el.hidden = !!state.hidden;
+  el.innerHTML = state.innerHTML || "";
+}
+
+export function pushUndoSnapshot(key, element) {
+  if (!key || !element) return;
+
+  const edits = getMapFromStorage("quick-style-edits");
+  const changes = getMapFromStorage("quick-style-changes");
+
+  const snapshot = {
+    key,
+    state: captureElementState(element),
+    prevEdit: edits.has(key) ? cloneSerializable(edits.get(key)) : null,
+    prevChange: changes.has(key) ? cloneSerializable(changes.get(key)) : null,
+  };
+
+  const stackRaw = getStorage("quick-style-undo-stack");
+  const stack = stackRaw ? JSON.parse(stackRaw) : [];
+  stack.push(snapshot);
+
+  const MAX_STACK_SIZE = 100;
+  const limited = stack.length > MAX_STACK_SIZE ? stack.slice(-MAX_STACK_SIZE) : stack;
+  setStorage("quick-style-undo-stack", JSON.stringify(limited));
+}
+
+export function popUndoSnapshot() {
+  const stackRaw = getStorage("quick-style-undo-stack");
+  if (!stackRaw) return null;
+
+  const stack = JSON.parse(stackRaw);
+  if (!Array.isArray(stack) || stack.length === 0) return null;
+
+  const snapshot = stack.pop();
+  setStorage("quick-style-undo-stack", JSON.stringify(stack));
+  return snapshot;
 }

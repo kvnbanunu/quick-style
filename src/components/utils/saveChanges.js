@@ -31,4 +31,5 @@ export async function saveAll() {
   removeStorage("quick-style-selected");
   removeStorage("quick-style-edits");
   removeStorage("quick-style-changes");
+  removeStorage("quick-style-undo-stack");
 }

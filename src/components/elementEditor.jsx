@@ -4,7 +4,7 @@ import TailwindClassInput from "./TailWindClassInput";
 import TailwindClassMenus from "./TailWindClassMenus";
 import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { storeChange, storeEdit } from "./utils/sessionStorage";
+import { pushUndoSnapshot, storeChange, storeEdit } from "./utils/sessionStorage";
 
 export default function ClassEditor({ classes, selected, setClasses }) {
   function getElementByQSSrc(qsSrc) {
@@ -32,6 +32,11 @@ export default function ClassEditor({ classes, selected, setClasses }) {
   function applyClasses(list) {
     const target = getLiveSelectedElement();
     if (!target) return;
+
+    const key = target.dataset?.qsSrc;
+    if (key) {
+      pushUndoSnapshot(key, target);
+    }
 
     target.setAttribute("class", list.join(" "));
     setClasses(list);

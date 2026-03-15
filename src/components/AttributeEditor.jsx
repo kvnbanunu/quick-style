@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import {
   getMapFromStorage,
+  pushUndoSnapshot,
   storeChange,
   storeEdit,
 } from "./utils/sessionStorage";
@@ -30,13 +31,17 @@ export default function AttributeEditor({ selected }) {
     const trimmedName = attributeName.trim();
     if (!selected || !trimmedName) return;
 
+    const key = selected.dataset?.qsSrc;
+    if (key) {
+      pushUndoSnapshot(key, selected);
+    }
+
     selected.setAttribute(trimmedName, attributeValue);
 
     const copy = selected.cloneNode(true);
     removeQSSrcAttribute(copy);
     const src = getReactSourceInfo(selected);
 
-    const key = selected.dataset.qsSrc;
     const store = getMapFromStorage("quick-style-edits");
     if (store.has(key)) {
       const el = store.get(key);
@@ -60,6 +65,11 @@ export default function AttributeEditor({ selected }) {
   function removeAttribute(attributeNameToRemove) {
     if (!selected) return;
 
+    const key = selected.dataset?.qsSrc;
+    if (key) {
+      pushUndoSnapshot(key, selected);
+    }
+
     const trimmedName = attributeNameToRemove.trim();
 
     selected.removeAttribute(trimmedName);
@@ -68,7 +78,6 @@ export default function AttributeEditor({ selected }) {
     removeQSSrcAttribute(copy);
     const src = getReactSourceInfo(selected);
 
-    const key = selected.dataset.qsSrc;
     const store = getMapFromStorage("quick-style-edits");
     if (store.has(key)) {
       const el = store.get(key);

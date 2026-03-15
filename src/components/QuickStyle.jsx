@@ -10,6 +10,7 @@ import {
 } from "./utils/sessionStorage";
 import TextEditor, { getNodeByPath } from "./TextEditor";
 import AttributeEditor from "./AttributeEditor";
+import UndoButton from "./UndoButton";
 import { saveAll } from "./utils/saveChanges";
 
 export default function QuickStyle() {
@@ -556,11 +557,20 @@ export default function QuickStyle() {
 
         {/* Footer */}
         <div className="flex justify-around shrink-0 border-t border-zinc-700/60">
+          <UndoButton
+            edits={edits}
+            setEdits={setEdits}
+            selected={selected}
+            setClasses={setClasses}
+            setInnerText={setInnerText}
+          />
           <button
+            type="button"
             onClick={() => {
               setIsOpen(false);
               saveAll();
             }}
+            className="w-full py-2 text-xs text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             Save
           </button>

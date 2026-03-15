@@ -1,10 +1,12 @@
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { storeChange, storeEdit } from "./utils/sessionStorage";
+import { pushUndoSnapshot, storeChange, storeEdit } from "./utils/sessionStorage";
 
 const DeleteButton = ({ selected }) => {
   const handleDelete = () => {
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
     const key = selected.dataset.qsSrc;
+
+    pushUndoSnapshot(key, selected);
 
     selected.hidden = true;
 

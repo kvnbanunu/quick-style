@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
 import ButtonEditor from "./ButtonEditor";
-import { storeEdit, storeChange } from "./utils/sessionStorage";
+import { pushUndoSnapshot, storeEdit, storeChange } from "./utils/sessionStorage";
 
 const CHILD_ELEMENT_OPTIONS = [
   "div",
@@ -62,6 +62,11 @@ export default function TextEditor({ selected, setInnerText, setSelected }) {
   function handleTextNodeChange(path, value) {
     if (!selected) return;
 
+    const key = selected.dataset?.qsSrc;
+    if (key) {
+      pushUndoSnapshot(key, selected);
+    }
+
     setTextNodes((prev) =>
       prev.map((node) =>
         node.path.join(".") === path.join(".") ? { ...node, value } : node,
@@ -103,6 +108,11 @@ export default function TextEditor({ selected, setInnerText, setSelected }) {
     if (!selected) return;
 
     const parent = selected;
+    const key = parent.dataset?.qsSrc;
+    if (key) {
+      pushUndoSnapshot(key, parent);
+    }
+
     const child = document.createElement(newChildTag);
 
     child.className = "bg-white border border-black text-black p-2";
