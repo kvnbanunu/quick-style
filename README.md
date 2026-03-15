@@ -1,12 +1,45 @@
-# React + Vite
+# What is QuickStyle?
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+QuickStyle is a tool to help style your react project quickly and easily. QuickStyle will take your tailwind styling to the next level!
 
-Currently, two official plugins are available:
+# Installation
+```
+npm install quick-style-hackathon
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Setup
+1. Setup vite.config.js:
+```
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { quickStyle } from 'quick-style-hackathon';
 
-## Expanding the ESLint configuration
+export default defineConfig({
+  plugins: [
+    react({
+      babel: {
+        plugins: ["quick-style-hackathon/babel-plugin"],
+      },
+    }),
+    tailwindcss(),
+    quickStyle(),
+  ],
+});
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Add QuickStyle component to your file
+
+```
+import { QuickStyle } from 'quick-style-hackathon';
+import 'quick-style-hackathon/style.css';
+
+function App() {
+  return (
+    <>
+      <QuickStyle />
+      {/* Your App Code */}
+    </>
+  );
+}
+```
