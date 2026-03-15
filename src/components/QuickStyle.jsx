@@ -238,33 +238,35 @@ export default function QuickStyle() {
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
+        className="border bg-black w-[28rem] h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
       >
         <p className="text-lg">Quick Style Editor</p>
-        <ElementTraverser
-          selected={selected}
-          selectElement={selectElement}
-          hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef}
-        />
-        <ClassEditor
-          classes={classes}
-          selected={selected}
-          setClasses={setClasses}
-          setSelected={setSelected}
-        />
-        <br />
-        <TextEditor
-          selected={selected}
-          innerText={innerText}
-          setInnerText={setInnerText}
-        />
-        <ElementDragger
-          updateBox={updateBox}
-          selected={selected}
-          hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef}
-        />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <ElementTraverser
+            selected={selected}
+            selectElement={selectElement}
+            hoverBoxRef={hoverBoxRef}
+            selectBoxRef={selectBoxRef}
+          />
+          <ClassEditor
+            classes={classes}
+            selected={selected}
+            setClasses={setClasses}
+            setSelected={setSelected}
+          />
+          <br />
+          <TextEditor
+            selected={selected}
+            innerText={innerText}
+            setInnerText={setInnerText}
+          />
+          <ElementDragger
+            updateBox={updateBox}
+            selected={selected}
+            hoverBoxRef={hoverBoxRef}
+            selectBoxRef={selectBoxRef}
+          />
+        </div>
         <button
           onClick={() => {
             setIsOpen(false);
