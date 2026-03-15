@@ -1,9 +1,15 @@
+# What is QuickStyle?
+
+QuickStyle is a tool to help style your react project quickly and easily. QuickStyle will take your tailwind styling to the next level!
+
 # Installation
+```
 npm install quick-style-hackathon
+```
 
 # Setup
 1. Setup vite.config.js:
-
+```
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -20,9 +26,11 @@ export default defineConfig({
     quickStyle(),
   ],
 });
+```
 
 2. Add QuickStyle component to your file
 
+```
 import { QuickStyle } from 'quick-style-hackathon';
 import 'quick-style-hackathon/style.css';
 
@@ -34,4 +42,4 @@ function App() {
     </>
   );
 }
-
+```
