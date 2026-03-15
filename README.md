@@ -2,6 +2,8 @@
 
 QuickStyle is a tool to help style your react project quickly and easily. QuickStyle will take your tailwind styling to the next level!
 
+For projects using Vite+React+Tailwind
+
 # Installation
 ```
 npm install quick-style-hackathon
