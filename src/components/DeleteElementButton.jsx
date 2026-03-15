@@ -1,27 +1,23 @@
-import React from 'react';
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
+import { storeChange, storeEdit } from "./utils/sessionStorage";
 
 const DeleteButton = ({ selected }) => {
-  const handleDelete = async (e) => {
-
+  const handleDelete = () => {
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
+    const key = selected.dataset.qsSrc;
 
-    await fetch("/api/delete-element", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filePath: fileName,
-        line_number: lineNumber,
-        column_number: columnNumber+1,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Backend response:", data))
-      .catch(console.error);
+    selected.hidden = true;
+
+    storeEdit(key, "delete", true);
+    storeChange(key, "delete", {
+      filePath: fileName,
+      line_number: lineNumber,
+      column_number: columnNumber + 1,
+    });
   };
 
   return (
-    <button 
+    <button
       onClick={handleDelete}
       className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
     >
@@ -31,3 +27,4 @@ const DeleteButton = ({ selected }) => {
 };
 
 export default DeleteButton;
+

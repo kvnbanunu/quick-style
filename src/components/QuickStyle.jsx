@@ -297,7 +297,7 @@ export default function QuickStyle() {
 
     for (const [key, val] of editMap) {
       const el = findElementByQSSrc(key);
-      if (el) {
+      if (el !== null) {
         // Support both current shape ({ editClass, editText }) and legacy
         // shape where the map value was just an array of classes.
         const classEdit = Array.isArray(val?.editClass)
@@ -337,6 +337,10 @@ export default function QuickStyle() {
           for (const name in val.rmAtt) {
             el.removeAttribute(name);
           }
+        }
+
+        if (val.delete !== null) {
+          el.hidden = true;
         }
       }
     }

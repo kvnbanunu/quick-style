@@ -48,6 +48,7 @@ export function storeEdit(key, type, obj) {
         addChild: null,
         addAtt: null,
         rmAtt: null,
+        delete: null,
       };
       temp[type] = obj;
       store.set(key, temp);
@@ -59,6 +60,7 @@ export function storeEdit(key, type, obj) {
       addChild: null,
       addAtt: null,
       rmAtt: null,
+      delete: null,
     };
     temp[type] = obj;
     store.set(key, temp);

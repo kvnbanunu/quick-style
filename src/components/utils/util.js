@@ -27,3 +27,4 @@ function findElementByOuterHTML(htmlString) {
   }
   return null; // no match
 }
+

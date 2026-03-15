@@ -22,6 +22,9 @@ export async function saveAll() {
     if (val.changeFull !== null) {
       await saveChanges("/api/update-full-element", val.changeFull);
     }
+    if (val.delete !== null) {
+      await saveChanges("/api/delete-element", val.delete);
+    }
   }
 
   setStorage("quick-style-isOpen", "false");
