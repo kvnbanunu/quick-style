@@ -61,17 +61,21 @@ export function elementUpdater(server) {
               lengthToReplace = openingTagEndIndex;
             }
           }
+
+          const safeElementString = elementString.replace(/ class=/g, ' className=');
+
           const newFileContent = 
             fileContent.slice(0, startIndex) + 
-            elementString +                   
+            safeElementString +                   
             fileContent.slice(startIndex + lengthToReplace); 
+
+          // console.log("String: " + safeElementString)
 
           fs.writeFileSync(resolvedPath, newFileContent, "utf-8");                
 
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ success: true }));
         } catch (err) {
-          console.error("❌ Update Failed:", err.message);
           res.statusCode = 500;
           res.end(JSON.stringify({ success: false, error: err.message }));
         }
