@@ -10,7 +10,7 @@ export default function QuickStyle() {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
-
+  const [panelSide, setPanelSide] = useState(() => getStorage("editorSide") || "right");
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
@@ -41,6 +41,12 @@ export default function QuickStyle() {
     }
   }
 
+  function setEditorSide(side) {
+    setPanelSide(side);
+    setStorage("editorSide", side);
+  }
+  const sideClass = panelSide === "left" ? "left-10 right-auto"
+    : "right-10 left-auto";
   function onClick(e) {
     if (!isOpen) return;
 
@@ -123,7 +129,7 @@ export default function QuickStyle() {
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
   }
-  
+
   useEffect(() => {
     //applies selected element classes to the quickstyle box for viewing 
     if (!selected) return;
@@ -143,7 +149,7 @@ export default function QuickStyle() {
 
     observer.observe(selected, { attributes: true, attributeFilter: ["class"] });
 
-    
+
     return () => observer.disconnect();
   }, [selected]);
 
@@ -183,26 +189,24 @@ export default function QuickStyle() {
   }, []);
 
 
-
-
   if (isOpen) {
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
+        className={`border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 ${sideClass} flex flex-col`}
       >
-        <p className="text-lg">Quick Style Editor</p>
-        <ElementTraverser
-          selected={selected}
-          selectElement={selectElement}
-          hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef}
-        />
+        <div className="flex items-center justify-between p-2"> <p className="text-lg">Quick Style Editor</p> <div className="flex gap-2"> <button type="button" onClick={() => setEditorSide("left")}> Dock Left </button> <button type="button" onClick={() => setEditorSide("right")}> Dock Right </button> </div> </div>
         <ClassEditor
           classes={classes}
           selected={selected}
           setClasses={setClasses}
           setSelected={setSelected}
+        />
+        <ElementTraverser
+          selected={selected}
+          selectElement={selectElement}
+          hoverBoxRef={hoverBoxRef}
+          selectBoxRef={selectBoxRef}
         />
         <ElementDragger
           updateBox={updateBox}
@@ -228,7 +232,7 @@ export default function QuickStyle() {
           turnOnQuickStyle();
           setIsOpen(true);
         }}
-        className="fixed bottom-10 right-10 z-10"
+        className={`fixed bottom-10 ${sideClass} z-10`}
       >
         Quick Style!
       </button>
