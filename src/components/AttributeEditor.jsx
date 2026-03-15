@@ -8,7 +8,7 @@ export default function AttributeEditor({ selected }) {
   const filteredAttributes = selected
     ? Array.from(selected.attributes).filter(
       (attribute) =>
-        !["class", "className", "href", "data-qs-src", "data-qc-src"].includes(
+        !["class", "className", "href", "data-qs-src"].includes(
           attribute.name,
         ),
     )
