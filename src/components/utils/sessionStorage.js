@@ -79,12 +79,12 @@ export function storeChange(key, type, obj) {
       store.delete(key);
       store.set(key, curr);
     } else {
-      const temp = { changeClass: null, changeFull: null };
+      const temp = { changeClass: null, changeFull: null, delete: null };
       temp[type] = obj;
       store.set(key, temp);
     }
   } else {
-    const temp = { changeClass: null, changeFull: null };
+    const temp = { changeClass: null, changeFull: null, delete: null };
     temp[type] = obj;
     store.set(key, temp);
   }
@@ -149,7 +149,8 @@ export function pushUndoSnapshot(key, element) {
   stack.push(snapshot);
 
   const MAX_STACK_SIZE = 100;
-  const limited = stack.length > MAX_STACK_SIZE ? stack.slice(-MAX_STACK_SIZE) : stack;
+  const limited =
+    stack.length > MAX_STACK_SIZE ? stack.slice(-MAX_STACK_SIZE) : stack;
   setStorage("quick-style-undo-stack", JSON.stringify(limited));
 }
 
