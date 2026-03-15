@@ -4,6 +4,7 @@ import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
+import TextEditor from "./TextEditor";
 
 export default function QuickStyle() {
   const [init, setInit] = useState(false);
@@ -11,6 +12,8 @@ export default function QuickStyle() {
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
   const [panelSide, setPanelSide] = useState(() => getStorage("editorSide") || "right");
+  const [innerText, setInnerText] = useState(null);
+
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
 
@@ -19,7 +22,7 @@ export default function QuickStyle() {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
 
-      // document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
       setStorage("quick-style-isOpen", false);
@@ -28,7 +31,7 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      // document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
@@ -133,6 +136,7 @@ export default function QuickStyle() {
     updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
+      setInnerText(selected.innerHTML);
     };
 
     syncClasses();
@@ -151,16 +155,29 @@ export default function QuickStyle() {
     return () => observer.disconnect();
   }, [selected]);
 
-  useEffect(() => {
-    if (!init) return;
-    if (selected === null) return;
+  // useEffect(() => {
+  //   if (!init) return;
+  //   if (selected === null) return;
 
-    setClasses(
-      (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
-    );
+  //   setClasses(
+  //     (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
+  //   );
+  //   setInnerText(selected.innerHTML);
+  //   updateSelectBox(selected);
+  //   selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // }, [selected]);
+
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
     updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [selected]);
+  }, [innerText, selected]);
+
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
+    updateSelectBox(selected);
+  }, [innerText, selected]);
 
   useEffect(() => {
     if (!init) return;
@@ -204,9 +221,13 @@ export default function QuickStyle() {
     setIsOpen(isOpenVal);
     if (selectedStore !== null) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      setSelected(
-        stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
-      );
+      console.log(selectedStr);
+      let selectedEl = document.querySelector(selectedStr);
+      if (selectedEl) {
+        setSelected(
+          stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
+        );
+      }
     }
 
     return () => {
@@ -238,6 +259,12 @@ export default function QuickStyle() {
           selectElement={selectElement}
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
+        />
+        <br />
+        <TextEditor
+          selected={selected}
+          innerText={innerText}
+          setInnerText={setInnerText}
         />
         <ElementDragger
           updateBox={updateBox}
