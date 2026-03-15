@@ -8,6 +8,7 @@ export default function TextEditor({ selected, innerText, setInnerText }) {
   function removeQSSrcAttribute(el) {
     if (!el) return;
     el.removeAttribute("data-qs-src");
+    el.removeAttribute("style");
     Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
   }
 
