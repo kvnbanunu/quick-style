@@ -12,6 +12,7 @@ export default function QuickStyle() {
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
   const [innerText, setInnerText] = useState(null);
+  const [edits, setEdits] = useState(new Map());
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
@@ -200,7 +201,6 @@ export default function QuickStyle() {
     setIsOpen(isOpenVal);
     if (selectedStore !== null && selectedStore !== undefined) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      console.log(selectedStr);
       let selectedEl = document.querySelector(selectedStr);
       if (selectedEl) {
         setSelected(
@@ -209,11 +209,35 @@ export default function QuickStyle() {
       }
     }
 
+    const editStore = getStorage("quick-style-edits");
+    if (editStore !== null) {
+      const editMap = new Map(JSON.parse(editStore));
+      setEdits(editMap);
+      applyTempEdits();
+    }
+
     return () => {
       hoverBox.remove();
       selectBox.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!init) return;
+    applyTempEdits();
+  }, [edits]);
+
+  function applyTempEdits() {
+    if (edits.size === 0) return;
+
+    for (const [element, classList] of edits) {
+      const el = document.querySelector(`[data-qs-src="${element}"]`);
+      if (el) {
+        const thisEl = stringToHTMLElements(el.outerHTML);
+        thisEl.setAttribute("class", classList.join(" "));
+      }
+    }
+  }
 
   if (isOpen) {
     return (
@@ -232,7 +256,6 @@ export default function QuickStyle() {
           classes={classes}
           selected={selected}
           setClasses={setClasses}
-          setSelected={setSelected}
         />
         <br />
         <TextEditor

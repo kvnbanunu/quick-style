@@ -10,7 +10,12 @@ export function removeStorage(key) {
   sessionStorage.removeItem(key);
 }
 
-export const storageKeys = ["quick-style-isOpen", "quick-style-selected"];
+export const storageKeys = [
+  "quick-style-isOpen",
+  "quick-style-selected",
+  "quick-style-edits",
+  "quick-style-changes",
+];
 
 export function clearStorage() {
   for (const key in storageKeys) {

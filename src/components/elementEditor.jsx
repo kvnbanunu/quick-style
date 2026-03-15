@@ -4,15 +4,9 @@ import TailwindClassInput from "./TailWindClassInput";
 import TailwindClassMenus from "./TailWindClassMenus";
 import { sendClass } from "../tw-runtime/tw-runtime";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
-import { setStorage } from "./utils/sessionStorage";
+import { getStorage, setStorage } from "./utils/sessionStorage";
 
-export default function ClassEditor({
-  classes,
-  selected,
-  oldSelected,
-  setClasses,
-  setSelected,
-}) {
+export default function ClassEditor({ classes, selected, setClasses }) {
   function applyClasses(list) {
     if (!selected) return;
 
@@ -30,12 +24,80 @@ export default function ClassEditor({
 
     const { fileName, lineNumber, columnNumber } = getReactSourceInfo(selected);
 
-    saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
+    // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
+    const key = selected.dataset.qsSrc;
+    storeChanges(key, newClasses, fileName, lineNumber, columnNumber + 1);
+    storeEdits(key, newClasses);
     sendClass(cls);
   }
 
+  function storeEdits(key, classes) {
+    const editStore = getStorage("quick-style-edits");
+    let storeVal;
+
+    if (editStore === null || editStore === undefined) {
+      const editMap = new Map();
+      editMap.set(key, classes);
+      storeVal = JSON.stringify([...editMap]);
+    } else {
+      const editMap = new Map(JSON.parse(editStore));
+      if (editMap.has(key)) {
+        editMap.delete(key);
+      }
+
+      editMap.set(key, classes);
+      storeVal = JSON.stringify([...editMap]);
+    }
+
+    setStorage("quick-style-edits", storeVal);
+  }
+
+  function storeChanges(key, classesToSave, filePath, lineNum, column) {
+    const changeStore = getStorage("quick-style-changes");
+    let storeVal;
+
+    if (changeStore === null || changeStore === undefined) {
+      const changeMap = new Map();
+      changeMap.set(key, {
+        classes: classesToSave,
+        filePath: filePath,
+        line_number: lineNum,
+        column_number: column,
+      });
+      storeVal = JSON.stringify([...changeMap]);
+    } else {
+      const changeMap = new Map(JSON.parse(changeStore));
+      if (changeMap.has(key)) {
+        changeMap.delete(key);
+      }
+      changeMap.set(key, {
+        classes: classesToSave,
+        filePath: filePath,
+        line_number: lineNum,
+        column_number: column,
+      });
+      storeVal = JSON.stringify([...changeMap]);
+    }
+    setStorage("quick-style-changes", storeVal);
+  }
+
+  async function saveAll() {
+    const changeStore = getStorage("quick-style-changes");
+    if (changeStore === null || changeStore === undefined) return;
+
+    const changeMap = new Map(JSON.parse(changeStore));
+    for (const [key, val] of changeMap) {
+      await saveChanges(
+        val.classes,
+        val.filePath,
+        val.line_number,
+        val.column_number,
+      );
+    }
+  }
+
   async function saveChanges(classesToSave, filePath, lineNum, column) {
-    setStorage("quick-style-selected", selected.dataset.qsSrc);
+    // setStorage("quick-style-selected", selected.dataset.qsSrc);
     await fetch("/api/update-element", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -81,6 +143,7 @@ export default function ClassEditor({
       />
       <TailwindClassInput allClasses={tailwindClasses} onAddClass={addClass} />
       <ClassPillList classes={classes} onRemoveClass={removeClass} />
+      <button onClick={saveAll}>Save Class Changes</button>
     </div>
   );
 }
