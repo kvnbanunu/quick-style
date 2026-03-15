@@ -9,7 +9,7 @@ function App() {
 
   return (
     <>
-      <div className="font-medium text-yellow-300 bg-red-600">
+      <div className="font-medium text-yellow-300 bg-red-600 size-full">
         Test Element
         <div className="text-ellipsis text-yellow-400 bg-red-400">
           Child Element
@@ -19,7 +19,7 @@ function App() {
       <Example />
       <div className="text-red-500">
         <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
+          <img src={viteLogo} className="logo bg-blue-500" alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />

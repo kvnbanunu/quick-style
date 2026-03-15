@@ -48,7 +48,9 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     const target = getLiveSelectedElement();
     if (!target) return;
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(target);
+    const sourceInfo = getReactSourceInfo(target);
+    if (!sourceInfo) return;
+    const { fileName, lineNumber, columnNumber } = sourceInfo;
 
     // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
     const key = target.dataset.qsSrc;
@@ -146,7 +148,9 @@ export default function ClassEditor({ classes, selected, setClasses }) {
     const target = getLiveSelectedElement();
     if (!target) return;
 
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(target);
+    const sourceInfo = getReactSourceInfo(target);
+    if (!sourceInfo) return;
+    const { fileName, lineNumber, columnNumber } = sourceInfo;
 
     // saveChanges(newClasses, fileName, lineNumber, columnNumber + 1);
     const key = target.dataset.qsSrc;

@@ -6,6 +6,7 @@ export default function ElementTraverser({ selected, selectElement, hoverBoxRef,
 
     return Array.from(document.body.querySelectorAll("*")).filter((el) => {
       if (!(el instanceof HTMLElement)) return false;
+      if (!el.hasAttribute("data-qs-src")) return false;
       if (panel && panel.contains(el)) return false;
       if (el === hoverBoxRef.current || el === selectBoxRef.current) return false;
       if (["HTML", "BODY", "HEAD", "SCRIPT", "STYLE", "LINK", "META"].includes(el.tagName)) return false;

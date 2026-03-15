@@ -73,9 +73,7 @@ export default function QuickStyle() {
     if (panel && panel.contains(e.target)) return;
 
     const target =
-      e.target instanceof Element
-        ? e.target.closest("[data-qs-src]") || e.target
-        : null;
+      e.target instanceof Element ? e.target.closest("[data-qs-src]") : null;
     if (!target) return;
 
     e.stopPropagation();
