@@ -322,8 +322,21 @@ export default function QuickStyle() {
             }
           }
         }
+
         if (val.addChild !== null) {
           el.innerHTML = val.addChild.inner;
+        }
+
+        if (val.addAtt !== null) {
+          for (const pair in val.addAtt) {
+            el.setAttribute(pair[0], pair[1]);
+          }
+        }
+
+        if (val.rmAtt !== null) {
+          for (const name in val.rmAtt) {
+            el.removeAttribute(name);
+          }
         }
       }
     }

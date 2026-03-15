@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { getReactSourceInfo } from "../utils/reactSourceInfo";
+import {
+  getMapFromStorage,
+  storeChange,
+  storeEdit,
+} from "./utils/sessionStorage";
 
 export default function AttributeEditor({ selected }) {
   const [attributeName, setAttributeName] = useState("");
@@ -7,11 +12,11 @@ export default function AttributeEditor({ selected }) {
 
   const filteredAttributes = selected
     ? Array.from(selected.attributes).filter(
-      (attribute) =>
-        !["class", "className", "href", "data-qs-src"].includes(
-          attribute.name,
-        ),
-    )
+        (attribute) =>
+          !["class", "className", "href", "data-qs-src"].includes(
+            attribute.name,
+          ),
+      )
     : [];
 
   function removeQSSrcAttribute(el) {
@@ -21,40 +26,70 @@ export default function AttributeEditor({ selected }) {
     Array.from(el.children).forEach((child) => removeQSSrcAttribute(child));
   }
 
-  async function persistElement(element) {
-    const copy = element.cloneNode(true);
-    removeQSSrcAttribute(copy);
-
-    const { fileName, lineNumber, columnNumber } = getReactSourceInfo(element) || {};
-
-    await fetch("/api/update-full-element", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        elementString: copy.outerHTML,
-        filePath: fileName,
-        line_number: lineNumber,
-        column_number: columnNumber + 1,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Backend response:", data))
-      .catch(console.error);
-  }
-
-  async function saveAttribute() {
+  function saveAttribute() {
     const trimmedName = attributeName.trim();
     if (!selected || !trimmedName) return;
 
     selected.setAttribute(trimmedName, attributeValue);
-    await persistElement(selected);
+
+    const copy = selected.cloneNode(true);
+    removeQSSrcAttribute(copy);
+    const src = getReactSourceInfo(selected);
+
+    const key = selected.dataset.qsSrc;
+    const store = getMapFromStorage("quick-style-edits");
+    if (store.has(key)) {
+      const el = store.get(key);
+      if (el.addAtt !== null) {
+        el.addAtt.push([trimmedName, attributeValue]);
+      } else {
+        el.addAtt = [[trimmedName, attributeValue]];
+      }
+      storeEdit(key, "addAtt", el.addAtt);
+    } else {
+      storeEdit(key, "addAtt", [[trimmedName, attributeValue]]);
+    }
+    storeChange(key, "changeFull", {
+      elementString: copy.outerHTML,
+      filePath: src.fileName,
+      line_number: src.lineNumber,
+      column_number: src.columnNumber + 1,
+    });
   }
 
-  async function removeAttribute(attributeNameToRemove) {
+  function removeAttribute(attributeNameToRemove) {
     if (!selected) return;
 
-    selected.removeAttribute(attributeNameToRemove);
-    await persistElement(selected);
+    const trimmedName = attributeNameToRemove.trim();
+
+    selected.removeAttribute(trimmedName);
+
+    const copy = selected.cloneNode(true);
+    removeQSSrcAttribute(copy);
+    const src = getReactSourceInfo(selected);
+
+    const key = selected.dataset.qsSrc;
+    const store = getMapFromStorage("quick-style-edits");
+    if (store.has(key)) {
+      const el = store.get(key);
+      if (el.rmAtt !== null) {
+        el.rmAtt.push(trimmedName);
+      } else {
+        el.rmAtt = [];
+        el.rmAtt.push(trimmedName);
+      }
+      storeEdit(key, "rmAtt", el.rmAtt);
+    } else {
+      const arr = [];
+      arr.push(trimmedName);
+      storeEdit(key, "rmAtt", arr);
+    }
+    storeChange(key, "changeFull", {
+      elementString: copy.outerHTML,
+      filePath: src.fileName,
+      line_number: src.lineNumber,
+      column_number: src.columnNumber + 1,
+    });
   }
 
   function resizeTextarea(el) {
@@ -64,7 +99,10 @@ export default function AttributeEditor({ selected }) {
     const lineHeight = parseFloat(window.getComputedStyle(el).lineHeight) || 24;
     const minHeight = lineHeight;
     const maxHeight = lineHeight * 4;
-    const nextHeight = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
+    const nextHeight = Math.max(
+      minHeight,
+      Math.min(el.scrollHeight, maxHeight),
+    );
 
     el.style.height = `${nextHeight}px`;
     el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";

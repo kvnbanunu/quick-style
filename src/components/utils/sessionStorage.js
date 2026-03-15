@@ -42,12 +42,24 @@ export function storeEdit(key, type, obj) {
       store.delete(key);
       store.set(key, curr);
     } else {
-      const temp = { editClass: null, editText: null, addChild: null };
+      const temp = {
+        editClass: null,
+        editText: null,
+        addChild: null,
+        addAtt: null,
+        rmAtt: null,
+      };
       temp[type] = obj;
       store.set(key, temp);
     }
   } else {
-    const temp = { editClass: null, editText: null, addChild: null };
+    const temp = {
+      editClass: null,
+      editText: null,
+      addChild: null,
+      addAtt: null,
+      rmAtt: null,
+    };
     temp[type] = obj;
     store.set(key, temp);
   }
