@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
@@ -26,14 +26,14 @@ export default function QuickStyle() {
       selectBoxRef.current.style.display = "none";
 
       // document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("click", onQSClick);
+      document.removeEventListener("click", onQSClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
       setStorage("quick-style-isOpen", false);
     }
   }
 
   function turnOnQuickStyle() {
-    if (hoverBoxRef.current && selectBoxRef.current) {
+    if (hoverBoxRef.current || selectBoxRef.current) {
       // document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onQSClick, true);
       // document.addEventListener("contextmenu", onRightClick);
@@ -43,19 +43,17 @@ export default function QuickStyle() {
     }
   }
 
-  function onQSClick(e) {
-    if (!isOpen) return;
-
+  const onQSClick = React.useCallback((e) => {
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
-    e.preventDefault();
     e.stopPropagation();
+    e.preventDefault();
 
     // Always store the latest clicked element
     setStorage("quick-style-selected", e.target.dataset.qsSrc);
     selectElement(e.target);
-  }
+  }, []);
 
   function onRightClick(e) {
     if (!isOpen) return;
@@ -80,7 +78,6 @@ export default function QuickStyle() {
   }
 
   function updateSelectBox(el) {
-    if (!isOpen) return;
     const box = selectBoxRef.current;
     if (!box) return;
 
@@ -203,14 +200,17 @@ export default function QuickStyle() {
     setInit(true);
 
     setIsOpen(isOpenVal);
-    if (selectedStore !== null) {
+    if (selectedStore !== null && selectedStore !== undefined) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
       setSelected(
         stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
       );
     }
 
-    document.addEventListener("beforeunload", clearStorage);
+    document.addEventListener("beforeunload", () => {
+      removeStorage("quick-style-isOpen");
+      removeStorage("quick-style-selected");
+    });
 
     return () => {
       hoverBox.remove();
