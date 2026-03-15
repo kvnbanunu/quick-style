@@ -73,7 +73,7 @@ export default function ClassEditor({
   }
 
   return (
-    <div className="bg-blue-700 flex-1 min-h-0 overflow-y-auto p-2">
+    <div className="bg-blue-700 flex-1 min-h-0 p-2">
       Class Editor
       <TailwindClassMenus
         selectedClasses={classes}

@@ -75,6 +75,7 @@ export default function TailwindClassInput({ allClasses, onAddClass }) {
         placeholder="search a class..."
         autoComplete="off"
         spellCheck={false}
+        className="bg-blue-500 rounded-2xl pl-2 h-8"
         style={{ width: "100%", boxSizing: "border-box" }}
       />
       {suggestions.length > 0 && (

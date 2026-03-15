@@ -4,12 +4,16 @@ import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
 import { clearStorage, getStorage, setStorage } from "./utils/localStorage";
 import { stringToHTMLElements } from "./utils/util";
+import TextEditor from "./TextEditor";
+import AttributeEditor from "./AttributeEditor";
 
 export default function QuickStyle() {
   const [init, setInit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
+  const [panelSide, setPanelSide] = useState(() => getStorage("editorSide") || "right");
+  const [innerText, setInnerText] = useState(null);
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
@@ -19,7 +23,7 @@ export default function QuickStyle() {
       hoverBoxRef.current.style.display = "none";
       selectBoxRef.current.style.display = "none";
 
-      // document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("click", onClick, true);
       // document.removeEventListener("contextmenu", onRightClick);
       setStorage("quick-style-isOpen", false);
@@ -28,7 +32,7 @@ export default function QuickStyle() {
 
   function turnOnQuickStyle() {
     if (hoverBoxRef.current && selectBoxRef.current) {
-      // document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("click", onClick, true);
       // document.addEventListener("contextmenu", onRightClick);
       hoverBoxRef.current.style.display = "block";
@@ -37,6 +41,12 @@ export default function QuickStyle() {
     }
   }
 
+  function setEditorSide(side) {
+    setPanelSide(side);
+    setStorage("editorSide", side);
+  }
+  const sideClass = panelSide === "left" ? "left-10 right-auto"
+    : "right-10 left-auto";
   function onClick(e) {
     if (!isOpen) return;
 
@@ -127,6 +137,7 @@ export default function QuickStyle() {
     updateSelectBox(selected);
     const syncClasses = () => {
       setClasses(getElementClasses(selected));
+      setInnerText(selected.innerHTML);
     };
 
     syncClasses();
@@ -145,16 +156,29 @@ export default function QuickStyle() {
     return () => observer.disconnect();
   }, [selected]);
 
-  useEffect(() => {
-    if (!init) return;
-    if (selected === null) return;
+  // useEffect(() => {
+  //   if (!init) return;
+  //   if (selected === null) return;
 
-    setClasses(
-      (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
-    );
+  //   setClasses(
+  //     (selected.getAttribute("class") || "").split(/\s+/).filter(Boolean),
+  //   );
+  //   setInnerText(selected.innerHTML);
+  //   updateSelectBox(selected);
+  //   selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // }, [selected]);
+
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
     updateSelectBox(selected);
-    selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [selected]);
+  }, [innerText, selected]);
+
+  useEffect(() => {
+    if (!selected || !(selected instanceof Element)) return;
+
+    updateSelectBox(selected);
+  }, [innerText, selected]);
 
   useEffect(() => {
     if (!init) return;
@@ -198,9 +222,13 @@ export default function QuickStyle() {
     setIsOpen(isOpenVal);
     if (selectedStore !== null) {
       const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      setSelected(
-        stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
-      );
+      console.log(selectedStr);
+      let selectedEl = document.querySelector(selectedStr);
+      if (selectedEl) {
+        setSelected(
+          stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
+        );
+      }
     }
 
     return () => {
@@ -215,30 +243,45 @@ export default function QuickStyle() {
   }
 
   if (isOpen) {
+    
     return (
       <div
         id="quickstyle-editor"
-        className="border bg-black w-[28rem] max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 right-10 flex flex-col"
+        className={`border bg-black w-md max-h-[80vh] overflow-hidden z-10 rounded fixed bottom-10 ${sideClass} flex flex-col`}
       >
-        <p className="text-lg">Quick Style Editor</p>
-        <ElementTraverser
-          selected={selected}
-          selectElement={selectElement}
-          hoverBoxRef={hoverBoxRef}
-          selectBoxRef={selectBoxRef}
-        />
-        <ClassEditor
-          classes={classes}
-          selected={selected}
-          setClasses={setClasses}
-          setSelected={setSelected}
-        />
-        <ElementDragger
+        <div className="flex items-center justify-between p-2"> <p className="text-lg">Quick Style Editor</p> <div className="flex gap-2"> <button type="button" onClick={() => setEditorSide("left")}> Dock Left </button> <button type="button" onClick={() => setEditorSide("right")}> Dock Right </button> </div> </div>
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <ElementTraverser
+            selected={selected}
+            selectElement={selectElement}
+            hoverBoxRef={hoverBoxRef}
+            selectBoxRef={selectBoxRef}
+          />
+          <ClassEditor
+            classes={classes}
+            selected={selected}
+            setClasses={setClasses}
+            setSelected={setSelected}
+          />
+          <br />
+          <TextEditor
+            selected={selected}
+            innerText={innerText}
+            setInnerText={setInnerText}
+            setSelected={setSelected}
+          />
+          <br/>
+          <AttributeEditor
+            selected={selected}
+          
+          />
+        </div>
+        {/* <ElementDragger
           updateBox={updateBox}
           selected={selected}
           hoverBoxRef={hoverBoxRef}
           selectBoxRef={selectBoxRef}
-        />
+        /> */}
         <button
           onClick={() => {
             setIsOpen(false);
@@ -255,7 +298,7 @@ export default function QuickStyle() {
         onClick={() => {
           setIsOpen(true);
         }}
-        className="fixed bottom-10 right-10 z-10"
+        className={`fixed bottom-10 ${sideClass} z-10`}
       >
         Quick Style!
       </button>

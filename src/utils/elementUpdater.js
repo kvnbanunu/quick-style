@@ -62,7 +62,29 @@ export function elementUpdater(server) {
             }
           }
 
-          const safeElementString = elementString.replace(/ class=/g, ' className=');
+          let safeElementString = elementString.replace(/ class=/g, ' className=');
+          safeElementString = safeElementString.replace(/ onclick=/g, ' onClick=');
+
+          const normalizeHandlerBody = (handlerBody) => {
+            const normalized = handlerBody
+              .replace(/&quot;/g, '"')
+              .replace(/\\"/g, '"')
+              .trim();
+
+            return /;\s*$/.test(normalized) ? normalized : `${normalized};`;
+          };
+
+          safeElementString = safeElementString.replace(
+            /\sonClick\s*=\s*"((?:\\.|[^"\\])*)"/g,
+            (_, handlerBody) => ` onClick={() => { ${normalizeHandlerBody(handlerBody)}}}`,
+          );
+          safeElementString = safeElementString.replace(
+            /\sonClick\s*=\s*'((?:\\.|[^'\\])*)'/g,
+            (_, handlerBody) => ` onClick={() => { ${normalizeHandlerBody(handlerBody)}}}`,
+          );
+
+          safeElementString = safeElementString.replace(/(?<!=)>(?!\n)/g, '>\n');
+          safeElementString = safeElementString.replace(/&quot;/g, '"');
 
           const newFileContent = 
             fileContent.slice(0, startIndex) + 
