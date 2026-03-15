@@ -45,3 +45,11 @@ export function ensureParentContains(el) {
     parent.style.height = Math.ceil(newHeight) + "px";
   }
 }
+
+export function isTextColorClass(cls) {
+  const base = cls.split(":").pop() || "";
+  return (
+    /^(text-(black|white|transparent|current|inherit))$/.test(base) ||
+    /^text-[a-z]+-(50|100|200|300|400|500|600|700|800|900|950)$/.test(base)
+  );
+}

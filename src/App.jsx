@@ -13,7 +13,7 @@ function App() {
         Test Element
         <div className="text-ellipsis text-yellow-400 bg-red-400">
           Child Element
-          <p className="">Paragraph</p><p className="gap-y-64">Paragraph</p>
+          <p className="justify-end">Paragraph</p><p className="gap-y-64">Paragraph</p>
         </div>
       </div>
       <Example />

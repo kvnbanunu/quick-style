@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import tailwindClasses from "./tailwindClasses";
+import { isTextColorClass } from "./utils/helpers";
+import ColorSwatch from "./ColorSwatch";
 
 const GROUPS = [
   {
@@ -25,7 +27,7 @@ const GROUPS = [
   {
     name: "Typography",
     match: (c) =>
-      c.startsWith("text-") ||
+      (c.startsWith("text-") && !isTextColorClass(c)) ||
       c.startsWith("font-") ||
       c.startsWith("leading-") ||
       c.startsWith("tracking-") ||
@@ -61,7 +63,7 @@ const GROUPS = [
     name: "Color",
     match: (c) =>
       c.startsWith("bg-") ||
-      c.startsWith("text-") ||
+      isTextColorClass(c) ||
       c.startsWith("border-") ||
       c.startsWith("from-") ||
       c.startsWith("via-") ||
@@ -99,7 +101,7 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
   const [open, setOpen] = useState(() =>
     Object.fromEntries(groups.map((g) => [g.name, false]))
   );
-
+  const warmedRef = useRef(new Set());
   return (
     <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
       {groups.map((group) => (
@@ -147,8 +149,12 @@ export default function TailwindClassMenus({ selectedClasses, onToggleClass }) {
                       background: active ? "#1d4ed8" : "#1f2937",
                       color: "#fff",
                       cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      position: "relative",
                     }}
                   >
+                    {/* <ColorSwatch cls={cls} /> */}
                     {cls}
                   </button>
                 );

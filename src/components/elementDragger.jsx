@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import * as utils from "./utils/draggerHelpers.js";
+import * as utils from "./utils/helpers.js";
 
 export default function ElementDragger({
   updateBox,
