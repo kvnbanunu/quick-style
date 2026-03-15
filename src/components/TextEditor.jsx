@@ -25,6 +25,7 @@ export default function TextEditor({
   const [href, setHref] = useState("");
   const [textNodes, setTextNodes] = useState([]);
   const [newChildTag, setNewChildTag] = useState("div");
+  const [childInsertPosition, setChildInsertPosition] = useState("end");
 
   function getNodePath(node, ancestor) {
     const path = [];
@@ -199,10 +200,12 @@ export default function TextEditor({
       child.textContent = `New ${newChildTag}`;
     }
 
-    // selected.appendChild(child);
-    // setInnerText(selected.innerHTML);
-    // setTextNodes(collectEditableTextNodes(selected));
-    parent.appendChild(child);
+    if (childInsertPosition === "start") {
+      parent.insertBefore(child, parent.firstChild);
+    } else {
+      parent.appendChild(child);
+    }
+
     setInnerText(parent.innerHTML);
     await persistElement(selected, selected);
 
@@ -271,6 +274,14 @@ export default function TextEditor({
           {CHILD_ELEMENT_OPTIONS.map((tag) => (
             <option key={tag} value={tag}>{tag}</option>
           ))}
+        </select>
+        <select
+          value={childInsertPosition}
+          onChange={(e) => setChildInsertPosition(e.target.value)}
+          className="bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-zinc-500 cursor-pointer transition-colors"
+        >
+          <option value="start">Beginning</option>
+          <option value="end">End</option>
         </select>
         <button
           type="button"

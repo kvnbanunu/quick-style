@@ -34,7 +34,7 @@ export default function QuickStyle() {
 
       document.removeEventListener("click", onQSClick, true);
       document.removeEventListener("mousemove", onMouseMove);
-      // document.removeEventListener("contextmenu", onRightClick);
+      document.removeEventListener("contextmenu", onQSRightClick);
       setStorage("quick-style-isOpen", false);
     }
   }
@@ -43,7 +43,7 @@ export default function QuickStyle() {
     if (hoverBoxRef.current || selectBoxRef.current) {
       document.addEventListener("click", onQSClick, true);
       document.addEventListener("mousemove", onMouseMove);
-      // document.addEventListener("contextmenu", onRightClick);
+      document.addEventListener("contextmenu", onQSRightClick);
       hoverBoxRef.current.style.display = "block";
       selectBoxRef.current.style.display = "block";
       setStorage("quick-style-isOpen", true);
@@ -69,7 +69,7 @@ export default function QuickStyle() {
     selectElement(e.target);
   }, []);
 
-  function onRightClick(e) {
+  const onQSRightClick = React.useCallback((e) => {
     if (!isOpen) return;
 
     const panel = document.getElementById("quickstyle-editor");
@@ -80,7 +80,7 @@ export default function QuickStyle() {
     setStorage("quick-style-selected", null);
     setSelected(null);
     updateSelectBox(null);
-  }
+  }, []);
 
   function onMouseMove(e) {
     if (!isOpen) return;
