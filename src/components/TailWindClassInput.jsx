@@ -54,7 +54,8 @@ export default function TailwindClassInput({ allClasses, onAddClass }) {
       commit(
         highlightedIndex >= 0 && suggestions[highlightedIndex]
           ? suggestions[highlightedIndex]
-          : value
+          : value,
+        setValue(null)
       );
     } else if (e.key === "Tab" && suggestions.length > 0) {
       e.preventDefault();

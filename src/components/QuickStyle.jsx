@@ -2,23 +2,34 @@ import React, { useEffect, useState, useRef } from "react";
 import ClassEditor from "./elementEditor";
 import ElementDragger from "./elementDragger";
 import ElementTraverser from "./elementTraverser";
-import { getStorage, setStorage } from "./utils/sessionStorage";
-import { stringToHTMLElements } from "./utils/util";
-import TextEditor from "./TextEditor";
-import AttributeEditor from "./AttributeEditor";
 import quickStyleIcon from "../assets/QuickStyle_Icon.png";
+import {
+  getMapFromStorage,
+  getStorage,
+  setStorage,
+} from "./utils/sessionStorage";
+import { stringToHTMLElements } from "./utils/util";
+import TextEditor, { getNodeByPath } from "./TextEditor";
+import AttributeEditor from "./AttributeEditor";
+import { saveAll } from "./utils/saveChanges";
 
 export default function QuickStyle() {
+  const SCROLL_STORAGE_KEY = "quick-style-scroll-position";
   const [init, setInit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState([]);
   const [panelSide, setPanelSide] = useState(
-    () => getStorage("editorSide") || "right",
+    () => getStorage("quick-style-editor-side") || "right",
   );
   const [innerText, setInnerText] = useState(null);
   const [edits, setEdits] = useState(new Map());
-  const [openSections, setOpenSections] = useState({ traverser: true, classes: true, text: false, attributes: false });
+  const [openSections, setOpenSections] = useState({
+    traverser: true,
+    classes: true,
+    text: false,
+    attributes: false,
+  });
 
   function toggleSection(key) {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -26,6 +37,17 @@ export default function QuickStyle() {
 
   const hoverBoxRef = useRef(null);
   const selectBoxRef = useRef(null);
+
+  function findElementByQSSrc(qsSrc) {
+    if (!qsSrc) return null;
+
+    const allTagged = document.querySelectorAll("[data-qs-src]");
+    for (const el of allTagged) {
+      if (el.getAttribute("data-qs-src") === qsSrc) return el;
+    }
+
+    return null;
+  }
 
   function turnOffQuickStyle() {
     if (hoverBoxRef.current || selectBoxRef.current) {
@@ -52,7 +74,7 @@ export default function QuickStyle() {
 
   function setEditorSide(side) {
     setPanelSide(side);
-    setStorage("editorSide", side);
+    setStorage("quick-style-editor-side", side);
   }
   const sideClass =
     panelSide === "left" ? "left-10 right-auto" : "right-10 left-auto";
@@ -61,12 +83,16 @@ export default function QuickStyle() {
     const panel = document.getElementById("quickstyle-editor");
     if (panel && panel.contains(e.target)) return;
 
+    const target =
+      e.target instanceof Element ? e.target.closest("[data-qs-src]") : null;
+    if (!target) return;
+
     e.stopPropagation();
     e.preventDefault();
 
     // Always store the latest clicked element
-    setStorage("quick-style-selected", e.target.dataset.qsSrc);
-    selectElement(e.target);
+    setStorage("quick-style-selected", target.getAttribute("data-qs-src"));
+    selectElement(target);
   }, []);
 
   const onQSRightClick = React.useCallback((e) => {
@@ -120,7 +146,6 @@ export default function QuickStyle() {
 
   function getElementClasses(el) {
     if (!el) return [];
-    //.log("Getting classes for", el, el.getAttribute("class"));
     return (el.getAttribute("class") || "").split(/\s+/).filter(Boolean);
   }
   function updateBox(el, box) {
@@ -186,6 +211,17 @@ export default function QuickStyle() {
   }, [isOpen]);
 
   useEffect(() => {
+    const savedScroll = getStorage(SCROLL_STORAGE_KEY);
+    if (savedScroll) {
+      try {
+        const { x = 0, y = 0 } = JSON.parse(savedScroll);
+        // Wait one frame so layout is ready before restoring.
+        requestAnimationFrame(() => window.scrollTo(x, y));
+      } catch {
+        // Ignore malformed storage payloads.
+      }
+    }
+
     const hoverBox = document.createElement("div");
     const selectBox = document.createElement("div");
 
@@ -217,21 +253,13 @@ export default function QuickStyle() {
 
     setIsOpen(isOpenVal);
     if (selectedStore !== null && selectedStore !== undefined) {
-      const selectedStr = `[data-qs-src="${selectedStore}"]`;
-      let selectedEl = document.querySelector(selectedStr);
+      const selectedEl = findElementByQSSrc(selectedStore);
       if (selectedEl) {
-        setSelected(
-          stringToHTMLElements(document.querySelector(selectedStr).outerHTML),
-        );
+        setSelected(selectedEl);
       }
     }
 
-    const editStore = getStorage("quick-style-edits");
-    if (editStore !== null) {
-      const editMap = new Map(JSON.parse(editStore));
-      setEdits(editMap);
-      applyTempEdits();
-    }
+    setEdits(getMapFromStorage("quick-style-edits"));
 
     return () => {
       hoverBox.remove();
@@ -244,17 +272,58 @@ export default function QuickStyle() {
     applyTempEdits();
   }, [edits]);
 
+  useEffect(() => {
+    let rafId = 0;
+
+    const persistScroll = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setStorage(
+          SCROLL_STORAGE_KEY,
+          JSON.stringify({ x: window.scrollX, y: window.scrollY }),
+        );
+      });
+    };
+
+    window.addEventListener("scroll", persistScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", persistScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   function applyTempEdits() {
     if (edits.size === 0) return;
 
-    for (const [element, classList] of edits) {
-      const el = document.querySelector(`[data-qs-src="${element}"]`);
+    for (const [key, val] of edits) {
+      const el = document.querySelector(`[data-qs-src="${key}"]`);
       if (el) {
         const thisEl = stringToHTMLElements(el.outerHTML);
-        thisEl.setAttribute("class", classList.join(" "));
+        if (val.editClass !== null) {
+          thisEl.setAttribute("class", val.editClass.join(" "));
+        }
+        if (val.editText !== null) {
+          const liveNode = getNodeByPath(thisEl, val.editText.path);
+          if (liveNode && liveNode.nodeType === Node.TEXT_NODE) {
+            liveNode.textContent = val.editText.value;
+          }
+        }
       }
     }
   }
+
+  useEffect(() => {
+    if (!selected) return;
+
+    const key = selected.getAttribute("data-qs-src");
+    if (!key) return;
+
+    const liveSelected = findElementByQSSrc(key);
+    if (liveSelected && liveSelected !== selected) {
+      setSelected(liveSelected);
+    }
+  }, [selected, classes, innerText]);
 
   if (isOpen) {
     return (
@@ -296,104 +365,117 @@ export default function QuickStyle() {
 
         {/* Scrollable content */}
         <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-zinc-700/40">
-
-          
-
-            {/* Element Traverser */ }
-            < div >
+          {/* Element Traverser */}
+          <div>
             <button
               type="button"
               onClick={() => toggleSection("traverser")}
               className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
             >
               <span className="uppercase tracking-widest">Element</span>
-              <span className={`transition-transform duration-200 ${openSections.traverser ? "rotate-180" : ""}`}>▾</span>
+              <span
+                className={`transition-transform duration-200 ${openSections.traverser ? "rotate-180" : ""}`}
+              >
+                ▾
+              </span>
             </button>
             {openSections.traverser && (
-            <div className="px-3 pb-3">
-              <ElementTraverser
-                selected={selected}
-                selectElement={selectElement}
-                hoverBoxRef={hoverBoxRef}
-                selectBoxRef={selectBoxRef}
-              />
-            </div>
-          )}
+              <div className="px-3 pb-3">
+                <ElementTraverser
+                  selected={selected}
+                  selectElement={selectElement}
+                  hoverBoxRef={hoverBoxRef}
+                  selectBoxRef={selectBoxRef}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Class Editor */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleSection("classes")}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            >
+              <span className="uppercase tracking-widest">Classes</span>
+              <span
+                className={`transition-transform duration-200 ${openSections.classes ? "rotate-180" : ""}`}
+              >
+                ▾
+              </span>
+            </button>
+            {openSections.classes && (
+              <div className="px-3 pb-3">
+                <ClassEditor
+                  classes={classes}
+                  selected={selected}
+                  setClasses={setClasses}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Text Editor */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleSection("text")}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            >
+              <span className="uppercase tracking-widest">Text</span>
+              <span
+                className={`transition-transform duration-200 ${openSections.text ? "rotate-180" : ""}`}
+              >
+                ▾
+              </span>
+            </button>
+            {openSections.text && (
+              <div className="px-3 pb-3">
+                <TextEditor
+                  selected={selected}
+                  innerText={innerText}
+                  setInnerText={setInnerText}
+                  setSelected={setSelected}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Attribute Editor */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleSection("attributes")}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            >
+              <span className="uppercase tracking-widest">Attributes</span>
+              <span
+                className={`transition-transform duration-200 ${openSections.attributes ? "rotate-180" : ""}`}
+              >
+                ▾
+              </span>
+            </button>
+            {openSections.attributes && (
+              <div className="px-3 pb-3">
+                <AttributeEditor selected={selected} />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Class Editor */}
-        <div>
+        {/* Footer */}
+        <div className="flex justify-around shrink-0 border-t border-zinc-700/60">
+          <button onClick={saveAll}>Save</button>
           <button
             type="button"
-            onClick={() => toggleSection("classes")}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            onClick={() => setIsOpen(false)}
+            className="w-full py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
           >
-            <span className="uppercase tracking-widest">Classes</span>
-            <span className={`transition-transform duration-200 ${openSections.classes ? "rotate-180" : ""}`}>▾</span>
+            Close
           </button>
-          {openSections.classes && (
-            <div className="px-3 pb-3">
-              <ClassEditor
-                classes={classes}
-                selected={selected}
-                setClasses={setClasses}
-              />
-            </div>
-          )}
         </div>
-
-        {/* Text Editor */}
-        <div>
-          <button
-            type="button"
-            onClick={() => toggleSection("text")}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
-          >
-            <span className="uppercase tracking-widest">Text</span>
-            <span className={`transition-transform duration-200 ${openSections.text ? "rotate-180" : ""}`}>▾</span>
-          </button>
-          {openSections.text && (
-            <div className="px-3 pb-3">
-              <TextEditor
-                selected={selected}
-                innerText={innerText}
-                setInnerText={setInnerText}
-                setSelected={setSelected}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Attribute Editor */}
-        <div>
-          <button
-            type="button"
-            onClick={() => toggleSection("attributes")}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors cursor-pointer"
-          >
-            <span className="uppercase tracking-widest">Attributes</span>
-            <span className={`transition-transform duration-200 ${openSections.attributes ? "rotate-180" : ""}`}>▾</span>
-          </button>
-          {openSections.attributes && (
-            <div className="px-3 pb-3">
-              <AttributeEditor selected={selected} />
-            </div>
-          )}
-        </div>
-
       </div>
-
-        {/* Footer */ }
-    <div className="shrink-0 border-t border-zinc-700/60">
-      <button
-        type="button"
-        onClick={() => setIsOpen(false)}
-        className="w-full py-2 text-xs text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
-      >
-        Close
-      </button>
-    </div>
-      </div >
     );
   } else {
     return (
