@@ -1,6 +1,6 @@
 {
   "name": "quick-style-hackathon",
-  "version": "1.0.37",
+  "version": "1.0.40",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",

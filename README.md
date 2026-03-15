@@ -1,12 +1,37 @@
-# React + Vite
+# Installation
+npm install quick-style-hackathon
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Setup
+1. Setup vite.config.js:
 
-Currently, two official plugins are available:
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { quickStyle } from 'quick-style-hackathon';
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+export default defineConfig({
+  plugins: [
+    react({
+      babel: {
+        plugins: ["quick-style-hackathon/babel-plugin"],
+      },
+    }),
+    tailwindcss(),
+    quickStyle(),
+  ],
+});
 
-## Expanding the ESLint configuration
+2. Add QuickStyle component to your file
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+import { QuickStyle } from 'quick-style-hackathon';
+import 'quick-style-hackathon/style.css';
+
+function App() {
+  return (
+    <>
+      <QuickStyle />
+      {/* Your App Code */}
+    </>
+  );
+}
+
