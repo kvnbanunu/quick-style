@@ -1,11 +1,12 @@
 {
   "name": "quick-style-hackathon",
-  "version": "1.0.40",
+  "version": "1.1.16",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./babel-plugin": "./src/utils/babel-plugin-source.js",
-    "./style.css": "./dist/index.css" 
+    "./style.css": "./dist/index.css",
+    "./plugin": "./src/tw-runtime/tw-runtime.js"
   },
   "files": [
     "dist",
