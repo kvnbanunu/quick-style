@@ -1,6 +1,6 @@
 # QuickStyle
 
-First Place Winner of [BCIT Hack The Break 2026](https://hackthebreak2026.devpost.com/) [devpost](https://devpost.com/software/quickstyle)
+First Place Winner of [BCIT Hack The Break 2026](https://hackthebreak2026.devpost.com/) Hackathon [devpost](https://devpost.com/software/quickstyle)
 
 QuickStyle is a tool to help style your react project quickly and easily.
 
